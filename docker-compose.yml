@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: writing-board-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      # .env 파일에서 값들을 가져옵니다.
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    command:
+      # 한글 깨짐 방지 설정
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      # 로컬 ./data 폴더에 DB 파일 저장 (삭제 방지)
+      - ./data/mysql:/var/lib/mysql

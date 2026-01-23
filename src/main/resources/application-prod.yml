@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: ${DB_URL}           # 배포할 때 주입
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate     # 배포 환경 안전장치
+    show-sql: false
