@@ -1,5 +1,5 @@
 ## Writing Board Backend
-자바 한줄밖에 없는 초기세팅
+자바 한줄 밖에 없는 초기세팅
 
 ### Tech Stack, dependencies
 build.gradle에 있음
