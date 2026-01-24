@@ -40,7 +40,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = (String) oAuth2User.getAttributes().get("email");
 
-        log.info("📧 OAuth2 로그인 시도: email={}", email);
+        log.info("OAuth2 로그인 시도: email={}", email);
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> {
@@ -52,7 +52,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtProvider.createAccessToken(member.getId(), "ROLE_USER");
         String refreshToken = jwtProvider.createRefreshToken(member.getId());
 
-        log.debug("🔑 JWT 토큰 생성 완료: memberId={}", member.getId());
+        log.debug("JWT 토큰 생성 완료: memberId={}", member.getId());
 
         // Redis에 임시 코드 생성 (30초 TTL)
         String tempCode = tempCodeService.createTempCode(accessToken, refreshToken);
@@ -66,7 +66,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         log.info("✅ OAuth2 로그인 성공: email={}, memberId={}, code={}",
                 email, member.getId(), tempCode);
-        log.debug("🔗 리다이렉트 URL: {}", targetUrl);
+        log.debug("리다이렉트 URL: {}", targetUrl);
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
