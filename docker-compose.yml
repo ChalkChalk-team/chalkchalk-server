@@ -1,4 +1,11 @@
 services:
+  redis:
+    image: redis:alpine
+    container_name: writing-board-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   db:
     image: mysql:8.4
     container_name: writing-board-db
