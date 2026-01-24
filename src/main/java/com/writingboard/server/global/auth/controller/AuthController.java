@@ -3,6 +3,7 @@ package com.writingboard.server.global.auth.controller;
 import com.writingboard.server.global.auth.dto.request.CodeExchangeRequest;
 import com.writingboard.server.global.auth.dto.response.TokenResponse;
 import com.writingboard.server.global.auth.service.TempCodeService;
+import com.writingboard.server.global.auth.service.TempCodeService.TokenSet;
 import com.writingboard.server.global.common.dto.ErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,9 @@ public class AuthController {
     @PostMapping("/exchange")
     public ResponseEntity<?> exchangeToken(@RequestBody @Valid CodeExchangeRequest request) {
 
-        log.info("📥 토큰 교환 요청: code={}", request.getCode());
-
-        TempCodeService.TokenSet tokens = tempCodeService.exchangeCode(request.getCode());
+        TokenSet tokens = tempCodeService.exchangeCode(request.getCode());
 
         if (tokens == null) {
-            log.warn("⚠️ 토큰 교환 실패: 유효하지 않은 코드");
 
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
@@ -41,7 +39,6 @@ public class AuthController {
                     ));
         }
 
-        log.info("✅ 토큰 교환 성공");
 
         return ResponseEntity.ok(TokenResponse.builder()
                 .accessToken(tokens.getAccessToken())

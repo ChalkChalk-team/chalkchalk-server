@@ -27,7 +27,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final MemberRepository memberRepository;
     private final TempCodeService tempCodeService;
 
-    @Value("${app.oauth.redirect-url:http://localhost:8080/login/success-test}")
+    @Value("${app.oauth.redirect-url}")
     private String redirectUrl;
 
     @Override
@@ -44,7 +44,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    log.error("❌ 가입되지 않은 사용자: email={}", email);
+                    log.error("가입되지 않은 사용자: email={}", email);
                     return new IllegalArgumentException("User not found: " + email);
                 });
 

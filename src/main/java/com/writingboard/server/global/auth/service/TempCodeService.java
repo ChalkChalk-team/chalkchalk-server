@@ -52,12 +52,7 @@ public class TempCodeService {
         }
     }
 
-    /**
-     * 임시 코드로 토큰 조회 및 삭제 (1회용)
-     *
-     * @param code 임시 코드
-     * @return TokenSet (없으면 null)
-     */
+
     public TokenSet exchangeCode(String code) {
         String key = KEY_PREFIX + code;
 
@@ -83,9 +78,7 @@ public class TempCodeService {
         }
     }
 
-    // ============================================
-    // DTO
-    // ============================================
+
 
     @Getter
     @NoArgsConstructor
@@ -100,9 +93,7 @@ public class TempCodeService {
     }
 }
 
-// ============================================
-// Custom Exception
-// ============================================
+
 
 class TempCodeException extends RuntimeException {
     public TempCodeException(String message, Throwable cause) {
