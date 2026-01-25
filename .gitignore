@@ -38,3 +38,4 @@ out/
 ### 직접 추가 파일 ###
 .env
 /data
+CLAUDE.md
