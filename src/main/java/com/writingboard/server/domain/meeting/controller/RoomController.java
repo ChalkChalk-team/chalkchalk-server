@@ -29,6 +29,7 @@ public class RoomController {
     public ResponseEntity<RoomCreateResponse> createRoom(
             @AuthenticationPrincipal Long memberId,
             @RequestBody @Valid RoomCreateRequest request) {
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(roomService.createRoom(memberId, request));
     }

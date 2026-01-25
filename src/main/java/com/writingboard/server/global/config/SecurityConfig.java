@@ -35,14 +35,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-
-                // ★ 세션 관리: JWT를 쓰므로 'STATELESS'로 설정하는 게 정석
-                // (단, OAuth2 인증 과정 중에는 잠시 세션이 필요할 수 있으나, 기본적으로 끄는 방향)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                // ★ CORS 설정 (앱/프론트 통신 위해 필수)
+                // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
@@ -59,15 +55,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // ★ OAuth2 설정
+                // OAuth2 설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
                         .successHandler(oAuth2SuccessHandler)
                 )
-
-                // ★ [핵심] JWT 필터를 "ID/PW 검사 필터"보다 앞에 끼워넣기
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -78,7 +72,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // CORS 설정 (나중에 프론트엔드 포트나 앱 접근 허용)
+    // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
