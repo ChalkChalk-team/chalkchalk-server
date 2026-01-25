@@ -1,6 +1,7 @@
 package com.writingboard.server.global.exception;
 
 import com.writingboard.server.domain.meeting.exception.MeetingException;
+import com.writingboard.server.domain.member.exception.MemberException;
 import com.writingboard.server.global.common.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MeetingException.class)
     public ResponseEntity<ErrorResponse> handleMeetingException(MeetingException e) {
         log.warn("MeetingException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<ErrorResponse> handleMemberException(MemberException e) {
+        log.warn("MemberException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
