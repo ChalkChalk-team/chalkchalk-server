@@ -1,9 +1,9 @@
-package com.writingboard.server.global.auth.handler;
+package com.writingboard.server.domain.auth.handler;
 
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
-import com.writingboard.server.global.auth.jwt.JwtProvider;
-import com.writingboard.server.global.auth.service.TempCodeService;
+import com.writingboard.server.domain.auth.jwt.JwtProvider;
+import com.writingboard.server.domain.auth.service.TempCodeService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

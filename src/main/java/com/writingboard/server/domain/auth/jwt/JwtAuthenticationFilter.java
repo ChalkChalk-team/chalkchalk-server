@@ -1,4 +1,4 @@
-package com.writingboard.server.global.auth.jwt;
+package com.writingboard.server.domain.auth.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

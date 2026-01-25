@@ -1,4 +1,4 @@
-package com.writingboard.server.global.auth.service;
+package com.writingboard.server.domain.auth.service;
 
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
