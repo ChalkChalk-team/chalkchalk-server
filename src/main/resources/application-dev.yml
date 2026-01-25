@@ -4,6 +4,8 @@ spring:
       host: localhost
       port: 6379
       password: ${REDIS_PASSWORD}
+    mongodb:
+      uri: mongodb://${MONGO_USER:root}:${MONGO_PASSWORD}@localhost:27017/writing_db?authSource=admin
 
   datasource:
     url: jdbc:mysql://localhost:3306/writing_db?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
