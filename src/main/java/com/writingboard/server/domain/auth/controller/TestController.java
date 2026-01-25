@@ -1,4 +1,4 @@
-package com.writingboard.server.global.auth.controller;
+package com.writingboard.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
