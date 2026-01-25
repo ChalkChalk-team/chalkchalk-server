@@ -50,7 +50,7 @@ public class RoomInviteService {
         Instant expiresAt = Instant.now().plus(expireMinutes, ChronoUnit.MINUTES);
 
         RoomInvite invite = RoomInvite.issue(
-                room, issuer, token, InviteType.LINK, expiresAt, null, null
+                room, issuer, token, InviteType.LINK, expiresAt, null
         );
 
         // 1. DB 저장

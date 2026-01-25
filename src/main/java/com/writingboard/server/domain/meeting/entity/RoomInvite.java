@@ -55,7 +55,7 @@ public class RoomInvite extends BaseEntity {
     private String note;
 
     public static RoomInvite issue(Room room, Member issuedBy, String token, InviteType type,
-                                   Instant expiresAt, Integer maxUses, String note) {
+                                   Instant expiresAt, String note) {
         RoomInvite i = new RoomInvite();
         i.room = room;
         i.issuedBy = issuedBy;
