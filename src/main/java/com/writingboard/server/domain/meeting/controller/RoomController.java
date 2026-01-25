@@ -62,6 +62,7 @@ public class RoomController {
     @GetMapping("/me")
     public ResponseEntity<List<RoomSummaryResponse>> getMyRooms(
             @AuthenticationPrincipal Long memberId) {
+//        log.info("회원ID : {}", memberId);
         return ResponseEntity.ok(roomService.getMyRooms(memberId));
     }
 
@@ -110,7 +111,7 @@ public class RoomController {
     }
 
     /**
-     * 참여자 강제 퇴장 (호스트/모더레이터)
+     * 참여자 강제 퇴장
      */
     @PostMapping("/{roomUuid}/kick/{targetMemberId}")
     public ResponseEntity<Void> kickParticipant(

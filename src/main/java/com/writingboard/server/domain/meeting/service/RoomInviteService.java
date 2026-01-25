@@ -44,10 +44,8 @@ public class RoomInviteService {
         validateParticipant(room, memberId);
 
         Member issuer = getMemberById(memberId);
+        int expireMinutes = request.getExpiresInMinutes() != null ? request.getExpiresInMinutes() : DEFAULT_EXPIRE_MINUTES;
 
-        int expireMinutes = request.getExpiresInMinutes();
-
-        // 새 초대 링크 생성
         String token = UUID.randomUUID().toString();
         Instant expiresAt = Instant.now().plus(expireMinutes, ChronoUnit.MINUTES);
 
@@ -55,10 +53,9 @@ public class RoomInviteService {
                 room, issuer, token, InviteType.LINK, expiresAt, null, null
         );
 
-        // 1. DB에 저장
+        // 1. DB 저장
         inviteRepository.save(invite);
-
-        // 2. Redis에 저장
+        // 2. Redis 저장
         inviteTokenRedisService.saveInviteToken(token, room.getRoomUuid(), expireMinutes);
 
         return InviteLinkResponse.of(invite);
