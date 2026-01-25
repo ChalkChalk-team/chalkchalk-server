@@ -32,7 +32,6 @@ public class MemberService {
     public MemberProfileResponse updateProfile(Long memberId, MemberUpdateRequest request) {
         Member member = getMemberById(memberId);
 
-        // 엔티티 비즈니스 메서드 호출 (Dirty Checking)
         member.updateProfile(request.getName(), request.getProfileImageUrl());
 
         return MemberProfileResponse.of(member);
@@ -46,7 +45,6 @@ public class MemberService {
     public void withdraw(Long memberId) {
         Member member = getMemberById(memberId);
 
-        // 이미 탈퇴했는지 재확인
         if (member.isDeleted()) {
             throw new MemberException(ErrorCode.ALREADY_DELETED);
         }
