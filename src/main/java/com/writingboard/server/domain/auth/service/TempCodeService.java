@@ -40,14 +40,14 @@ public class TempCodeService {
 
             redisTemplate.opsForValue().set(key, value, CODE_TTL);
 
-            log.info("✅ 임시 코드 생성 완료: code={}, ttl={}초", code, CODE_TTL.getSeconds());
+            log.info("임시 코드 생성 완료: code={}, ttl={}초", code, CODE_TTL.getSeconds());
             return code;
 
         } catch (JsonProcessingException e) {
-            log.error("❌ Redis 저장 실패 (JSON 변환 오류): code={}", code, e);
+            log.error("Redis 저장 실패 (JSON 변환 오류): code={}", code, e);
             throw new TempCodeException("토큰 저장에 실패했습니다", e);
         } catch (Exception e) {
-            log.error("❌ Redis 저장 실패 (알 수 없는 오류): code={}", code, e);
+            log.error("Redis 저장 실패 (알 수 없는 오류): code={}", code, e);
             throw new TempCodeException("임시 코드 생성에 실패했습니다", e);
         }
     }
@@ -61,19 +61,19 @@ public class TempCodeService {
             String value = redisTemplate.opsForValue().getAndDelete(key);
 
             if (value == null) {
-                log.warn("⚠️ 유효하지 않은 코드 (만료/없음/재사용): code={}", code);
+                log.warn("유효하지 않은 코드 (만료/없음/재사용): code={}", code);
                 return null;
             }
 
             TokenSet tokens = objectMapper.readValue(value, TokenSet.class);
-            log.info("✅ 토큰 교환 성공: code={}", code);
+            log.info("토큰 교환 성공: code={}", code);
             return tokens;
 
         } catch (JsonProcessingException e) {
-            log.error("❌ Redis 조회 실패 (JSON 파싱 오류): code={}", code, e);
+            log.error("Redis 조회 실패 (JSON 파싱 오류): code={}", code, e);
             throw new TempCodeException("토큰 조회에 실패했습니다", e);
         } catch (Exception e) {
-            log.error("❌ Redis 조회 실패 (알 수 없는 오류): code={}", code, e);
+            log.error("Redis 조회 실패 (알 수 없는 오류): code={}", code, e);
             throw new TempCodeException("토큰 교환에 실패했습니다", e);
         }
     }
