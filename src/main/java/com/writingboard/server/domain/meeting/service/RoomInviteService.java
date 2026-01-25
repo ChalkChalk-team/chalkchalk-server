@@ -27,10 +27,13 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class RoomInviteService {
 
+    private static final int DEFAULT_EXPIRE_MINUTES = 5;
+
     private final RoomRepository roomRepository;
     private final RoomInviteRepository inviteRepository;
     private final RoomParticipantRepository participantRepository;
     private final MemberRepository memberRepository;
+    private final InviteTokenRedisService inviteTokenRedisService;
 
     /**
      * 링크 초대 생성
@@ -42,26 +45,21 @@ public class RoomInviteService {
 
         Member issuer = getMemberById(memberId);
 
-        // 기존 활성 링크 확인
-        RoomInvite existingInvite = inviteRepository
-                .findByRoomIdAndTypeAndStatus(room.getId(), InviteType.LINK, InviteStatus.ACTIVE)
-                .orElse(null);
-
-        if (existingInvite != null && existingInvite.isUsable()) {
-            return InviteLinkResponse.of(existingInvite);
-        }
+        int expireMinutes = request.getExpiresInMinutes();
 
         // 새 초대 링크 생성
         String token = UUID.randomUUID().toString();
-        Instant expiresAt = request != null && request.getExpiresInHours() != null
-                ? Instant.now().plus(request.getExpiresInHours(), ChronoUnit.HOURS)
-                : null;
+        Instant expiresAt = Instant.now().plus(expireMinutes, ChronoUnit.MINUTES);
 
         RoomInvite invite = RoomInvite.issue(
                 room, issuer, token, InviteType.LINK, expiresAt, null, null
         );
 
+        // 1. DB에 저장
         inviteRepository.save(invite);
+
+        // 2. Redis에 저장
+        inviteTokenRedisService.saveInviteToken(token, room.getRoomUuid(), expireMinutes);
 
         return InviteLinkResponse.of(invite);
     }

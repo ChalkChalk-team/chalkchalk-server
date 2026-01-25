@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class InviteLinkRequest {
 
-    @Min(value = 1, message = "최소 1시간 이상이어야 합니다")
-    @Max(value = 168, message = "최대 7일(168시간)까지 설정 가능합니다")
-    private Integer expiresInHours;
+    @Min(value = 1, message = "최소 1분 이상")
+    @Max(value = 60, message = "최대 60분까지")
+    private Integer expiresInMinutes = 5;
 }

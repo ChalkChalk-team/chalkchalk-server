@@ -72,4 +72,19 @@ public class RoomInvite extends BaseEntity {
         if (status == InviteStatus.EXPIRED) return false;
         return expiresAt == null || !expiresAt.isBefore(Instant.now());
     }
+
+    /**
+     * 초대가 만료됐는지 체크하고, 만료됐으면 상태를 EXPIRED로 변경
+     * DB Fallback 시 호출
+     */
+    public void checkAndExpire() {
+        if (status == InviteStatus.EXPIRED) {
+            return;
+        }
+
+        if (expiresAt != null && expiresAt.isBefore(Instant.now())) {
+            this.status = InviteStatus.EXPIRED;
+            this.revokedAt = Instant.now();
+        }
+    }
 }

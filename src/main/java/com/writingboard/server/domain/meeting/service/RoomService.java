@@ -37,6 +37,7 @@ public class RoomService {
     private final RoomInviteRepository inviteRepository;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final InviteTokenRedisService inviteTokenRedisService;
 
     /**
      * 회의실 생성
@@ -125,17 +126,33 @@ public class RoomService {
      */
     @Transactional
     public RoomJoinResponse joinRoomByInvite(Long memberId, String inviteToken, String password) {
-        RoomInvite invite = inviteRepository.findByInviteToken(inviteToken)
-                .orElseThrow(() -> new MeetingException(ErrorCode.INVITE_NOT_FOUND));
+        Room room;
 
-        if (!invite.isUsable()) {
-            throw new MeetingException(ErrorCode.INVITE_EXPIRED);
+        // Redis에서 조회
+        String roomUuid = inviteTokenRedisService.getRoomUuid(inviteToken);
+
+        if (roomUuid != null) {
+            // Redis에 있음 → 유효한 초대 (Fast Path)
+            room = getRoomByUuid(roomUuid);
+        } else {
+            // 2차: DB Fallback (Redis 장애 또는 캐시 미스 대비)
+            RoomInvite invite = inviteRepository.findByInviteToken(inviteToken)
+                    .orElseThrow(() -> new MeetingException(ErrorCode.INVITE_NOT_FOUND));
+
+            // 만료 체크 및 상태 업데이트
+            invite.checkAndExpire();
+
+            if (!invite.isUsable()) {
+                throw new MeetingException(ErrorCode.INVITE_EXPIRED);
+            }
+
+            room = invite.getRoom();
         }
 
-        Room room = invite.getRoom();
         validateRoomOpen(room);
 
-        if (room.getPasswordHash() != null && invite.getType() == InviteType.LINK) {
+        // 비밀번호 검증
+        if (room.getPasswordHash() != null) {
             if (password == null || !passwordEncoder.matches(password, room.getPasswordHash())) {
                 throw new MeetingException(ErrorCode.INVALID_PASSWORD);
             }
