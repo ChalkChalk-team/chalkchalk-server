@@ -1,8 +1,8 @@
 package com.writingboard.server.global.config;
 
-import com.writingboard.server.global.auth.handler.OAuth2SuccessHandler;
-import com.writingboard.server.global.auth.jwt.JwtAuthenticationFilter; // ★ import 확인
-import com.writingboard.server.global.auth.service.CustomOAuth2UserService;
+import com.writingboard.server.domain.auth.handler.OAuth2SuccessHandler;
+import com.writingboard.server.domain.auth.jwt.JwtAuthenticationFilter; // ★ import 확인
+import com.writingboard.server.domain.auth.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

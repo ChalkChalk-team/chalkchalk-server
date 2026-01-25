@@ -1,10 +1,10 @@
-package com.writingboard.server.global.auth.controller;
+package com.writingboard.server.domain.auth.controller;
 
-import com.writingboard.server.global.auth.dto.request.CodeExchangeRequest;
-import com.writingboard.server.global.auth.dto.response.TokenResponse;
-import com.writingboard.server.global.auth.service.TempCodeService;
-import com.writingboard.server.global.auth.service.TempCodeService.TokenSet;
-import com.writingboard.server.global.common.dto.ErrorResponse;
+import com.writingboard.server.domain.auth.dto.request.CodeExchangeRequest;
+import com.writingboard.server.domain.auth.dto.response.TokenResponse;
+import com.writingboard.server.domain.auth.service.TempCodeService;
+import com.writingboard.server.domain.auth.service.TempCodeService.TokenSet;
+import com.writingboard.server.global.common.ErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

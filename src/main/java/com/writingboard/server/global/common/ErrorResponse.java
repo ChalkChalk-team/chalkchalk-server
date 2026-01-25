@@ -1,4 +1,4 @@
-package com.writingboard.server.global.common.dto;
+package com.writingboard.server.global.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

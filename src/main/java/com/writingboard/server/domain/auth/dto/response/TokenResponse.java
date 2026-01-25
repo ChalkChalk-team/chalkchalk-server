@@ -1,4 +1,4 @@
-package com.writingboard.server.global.auth.dto.response;
+package com.writingboard.server.domain.auth.dto.response;
 
 import lombok.Builder;
 import lombok.Data;

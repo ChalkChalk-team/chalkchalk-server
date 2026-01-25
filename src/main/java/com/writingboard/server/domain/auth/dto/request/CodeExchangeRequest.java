@@ -1,4 +1,4 @@
-package com.writingboard.server.global.auth.dto.request;
+package com.writingboard.server.domain.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
