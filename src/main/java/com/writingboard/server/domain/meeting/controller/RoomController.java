@@ -6,6 +6,7 @@ import com.writingboard.server.domain.meeting.dto.response.*;
 import com.writingboard.server.domain.meeting.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/rooms")
 @RequiredArgsConstructor
+@Slf4j
 public class RoomController {
 
     private final RoomService roomService;
