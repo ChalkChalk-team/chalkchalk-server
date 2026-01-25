@@ -18,7 +18,6 @@ services:
     volumes:
       # 로컬 ./data 폴더에 DB 파일 저장 (삭제 방지)
       - ./data/mysql:/var/lib/mysql
-      -
   redis:
     image: redis:alpine
     container_name: writing-board-redis
