@@ -53,18 +53,19 @@ public class StompChannelInterceptor implements ChannelInterceptor {
             if (jwtProvider.validateToken(token)) {
                 Long memberId = jwtProvider.getMemberIdFromToken(token);
                 accessor.setUser(new StompPrincipal(memberId));
+
                 log.debug("STOMP CONNECT 성공: memberId={}", memberId);
             } else {
                 throw new MessagingException("Invalid JWT token");
             }
         } else {
-            // 핸드셰이크에서 이미 검증된 경우 세션 속성에서 가져옴
+            // 핸드셰이크에서 이미 검증된 경우 세션 속성에서 멤버 아이디 가져옴
             Object memberIdAttr = accessor.getSessionAttributes() != null
                     ? accessor.getSessionAttributes().get("memberId")
                     : null;
 
             if (memberIdAttr instanceof Long memberId) {
-                accessor.setUser(new StompPrincipal(memberId));
+                accessor.setUser(new StompPrincipal(memberId)); // @MessageMapping 핸들러에서 Principal로 사용
                 log.debug("STOMP CONNECT (세션): memberId={}", memberId);
             }
         }
@@ -75,13 +76,13 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 
         if (destination != null && destination.startsWith("/topic/room/")) {
             String roomUuid = extractRoomUuid(destination);
-            Long memberId = getMemberId(accessor);
+            Long memberId = getMemberId(accessor); // STOMP 헤더에서 멤버 아이디 추출
 
             if (memberId == null) {
                 throw new MessagingException("인증되지 않은 사용자입니다.");
             }
 
-            if (!isParticipant(roomUuid, memberId)) {
+            if (!isParticipant(roomUuid, memberId)) { // 회의실 참여자만 메세지 보내고 받는거 허용
                 log.warn("SUBSCRIBE 거부: memberId={}, roomUuid={}", memberId, roomUuid);
                 throw new MessagingException("해당 회의실의 참여자가 아닙니다.");
             }

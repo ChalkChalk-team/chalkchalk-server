@@ -7,6 +7,7 @@ import com.writingboard.server.global.websocket.StompPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.annotation.SendToUser;
@@ -23,8 +24,8 @@ public class ChatMessageController {
 
     /**
      * 채팅 메시지 전송
-     * Client: STOMP SEND /app/room/{roomUuid}/chat
-     * Response: Redis Pub/Sub -> /topic/room/{roomUuid}
+     * Client 전송 -> /app/room/{roomUuid}/chat
+     * Redis Pub/Sub -> /topic/room/{roomUuid}
      */
     @MessageMapping("/room/{roomUuid}/chat")
     public void handleChatMessage(
@@ -41,7 +42,7 @@ public class ChatMessageController {
     /**
      * 에러 발생 시 개인 큐로 에러 메시지 전송
      */
-    @MessageMapping("/room/{roomUuid}/chat")
+    @MessageExceptionHandler
     @SendToUser("/queue/errors")
     public String handleError(Exception e) {
         log.error("채팅 메시지 처리 중 에러", e);

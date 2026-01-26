@@ -32,9 +32,7 @@ public class ChatHistoryService {
     private final RoomParticipantRepository participantRepository;
 
     /**
-     * 채팅 기록 조회 (커서 기반 페이징)
-     * - 진행 중인 회의실: 현재 참여자만 조회 가능
-     * - 종료된 회의실: 참여 이력이 있는 사용자만 조회 가능
+     * 채팅 기록 조회
      */
     public ChatHistoryResponse getMessages(Long memberId, String roomUuid,
                                             Instant before, Integer limit) {
@@ -42,9 +40,8 @@ public class ChatHistoryService {
         Room room = roomRepository.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.ROOM_NOT_FOUND));
 
-        // 2. 참여 이력 검증 (현재 참여 또는 과거 참여)
-        boolean hasParticipationHistory = participantRepository.findByRoomIdAndMemberId(
-                room.getId(), memberId).isPresent();
+        // 2. 참여 이력 검증
+        boolean hasParticipationHistory = participantRepository.findByRoomIdAndMemberId(room.getId(), memberId).isPresent();
 
         if (!hasParticipationHistory) {
             throw new ChatException(ChatErrorCode.NOT_PARTICIPANT_HISTORY);
@@ -57,11 +54,11 @@ public class ChatHistoryService {
         // 4. 메시지 조회
         List<ChatMessage> messages;
         if (before != null) {
-            // 커서 기반: before 시점 이전 메시지
+            // before 시점 이전 메시지
             messages = chatMessageRepository.findByRoomUuidAndTimestampBefore(
                     roomUuid, before, pageable);
         } else {
-            // 초기 로드: 최신 메시지
+            // 최신 메시지
             messages = chatMessageRepository.findByRoomUuidOrderByTimestampDesc(
                     roomUuid, pageable);
         }

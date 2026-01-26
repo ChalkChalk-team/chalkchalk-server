@@ -25,7 +25,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
         if (token != null && jwtProvider.validateToken(token)) {
             Long memberId = jwtProvider.getMemberIdFromToken(token);
-            attributes.put("memberId", memberId);
+            attributes.put("memberId", memberId); // 세션 저장
             log.debug("WebSocket 핸드셰이크 성공: memberId={}", memberId);
             return true;
         }

@@ -22,11 +22,9 @@ public class ChatHistoryController {
     private final ChatHistoryService chatHistoryService;
 
     /**
-     * 채팅 기록 조회 (커서 기반 페이징)
-     * - 진행 중인 회의실: 현재 참여자만 조회 가능
-     * - 종료된 회의실: 참여 이력이 있는 사용자만 조회 가능
+     * 채팅 기록 조회
      */
-    @Operation(summary = "채팅 기록 조회", description = "회의실의 채팅 기록을 커서 기반으로 조회합니다.")
+    @Operation(summary = "채팅 기록 조회")
     @GetMapping
     public ResponseEntity<ChatHistoryResponse> getMessages(
             @AuthenticationPrincipal Long memberId,

@@ -30,11 +30,10 @@ public class ChatRedisSubscriber implements MessageListener {
             ChatMessageDto chatMessage = objectMapper.readValue(body, ChatMessageDto.class);
             String roomUuid = extractRoomUuid(channel);
 
-            // 해당 서버 인스턴스의 로컬 구독자에게 전송
             String destination = TOPIC_PREFIX + roomUuid;
-            messagingTemplate.convertAndSend(destination, chatMessage);
+            messagingTemplate.convertAndSend(destination, chatMessage); // 회의실 참여자에게 전송
 
-            log.debug("로컬 구독자에게 메시지 전송: destination={}, messageId={}",
+            log.debug("클라이언트로 메시지 전송: destination={}, messageId={}",
                     destination, chatMessage.getId());
 
         } catch (Exception e) {
@@ -43,7 +42,6 @@ public class ChatRedisSubscriber implements MessageListener {
     }
 
     private String extractRoomUuid(String channel) {
-        // chat:room:{roomUuid} -> roomUuid 추출
         return channel.replace(CHANNEL_PREFIX, "");
     }
 }

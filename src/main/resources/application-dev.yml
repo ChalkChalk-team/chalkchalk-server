@@ -5,7 +5,7 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD}
     mongodb:
-      uri: mongodb://${MONGO_USER:root}:${MONGO_PASSWORD}@localhost:27017/writing_db?authSource=admin
+      uri: mongodb://yoon9531:testpasswordadmin1234@localhost:27017/writing_db?authSource=writing_db
 
   datasource:
     url: jdbc:mysql://localhost:3306/writing_db?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
@@ -33,6 +33,11 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+    com.writingboard.server: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.data.redis: DEBUG
 
 jwt:
   secret: ${JWT_SECRET}

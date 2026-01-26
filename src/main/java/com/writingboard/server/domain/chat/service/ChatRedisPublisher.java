@@ -23,7 +23,6 @@ public class ChatRedisPublisher {
             log.debug("Redis 메시지 발행: channel={}, messageId={}", channel, message.getId());
         } catch (Exception e) {
             log.error("Redis 메시지 발행 실패: channel={}", channel, e);
-            // MongoDB에 이미 저장되어 있으므로 실패해도 무시
         }
     }
 }

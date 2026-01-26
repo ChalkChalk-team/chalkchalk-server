@@ -28,7 +28,7 @@ services:
     volumes:
       - ./data/redis:/data
 
-  # 3. MongoDB (Chat History Storage)
+  # 3. MongoDB
   mongo:
     image: mongo:latest
     container_name: writing-board-mongo
@@ -38,5 +38,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: writing_db
     volumes:
       - ./data/mongo:/data/db
