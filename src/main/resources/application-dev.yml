@@ -21,15 +21,6 @@ spring:
       hibernate:
         format_sql: true
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope: profile, email
-
 logging:
   level:
     org.hibernate.SQL: debug
@@ -43,7 +34,3 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 1800000   # 30분 (ms 단위)
   refresh-expiration: 604800000 # 7일 (ms 단위)
-
-app:
-  oauth:
-    redirect-url: ${REDIRECT_URL}

@@ -1,8 +1,6 @@
 package com.writingboard.server.global.config;
 
-import com.writingboard.server.domain.auth.handler.OAuth2SuccessHandler;
-import com.writingboard.server.domain.auth.jwt.JwtAuthenticationFilter; // ★ import 확인
-import com.writingboard.server.domain.auth.service.CustomOAuth2UserService;
+import com.writingboard.server.domain.auth.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter; // ★ 주입 필요
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,24 +40,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/oauth2/**",
-                                "/login/**",
-                                "/api/auth/exchange", // 토큰 교환
+                                "/api/auth/guest-login",
+                                "/api/auth/refresh",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/static/**",
                                 "/error",
-                                "/ws-stomp/**" // WebSocket 엔드포인트
+                                "/ws-stomp/**"
                         ).permitAll()
                         .anyRequest().authenticated()
-                )
-
-                // OAuth2 설정
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oAuth2SuccessHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
