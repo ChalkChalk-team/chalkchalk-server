@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/static/**",
-                                "/error"
+                                "/error",
+                                "/ws-stomp/**" // WebSocket 엔드포인트
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

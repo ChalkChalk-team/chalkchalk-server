@@ -1,5 +1,6 @@
 package com.writingboard.server.global.exception;
 
+import com.writingboard.server.domain.chat.exception.ChatException;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
 import com.writingboard.server.global.common.ErrorResponse;
@@ -17,6 +18,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MeetingException.class)
     public ResponseEntity<ErrorResponse> handleMeetingException(MeetingException e) {
         log.warn("MeetingException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(ChatException.class)
+    public ResponseEntity<ErrorResponse> handleChatException(ChatException e) {
+        log.warn("ChatException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
