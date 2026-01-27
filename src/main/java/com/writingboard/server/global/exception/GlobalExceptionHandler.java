@@ -1,5 +1,6 @@
 package com.writingboard.server.global.exception;
 
+import com.writingboard.server.domain.auth.exception.AuthException;
 import com.writingboard.server.domain.chat.exception.ChatException;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
@@ -14,6 +15,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(AuthException e) {
+        log.warn("AuthException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
 
     @ExceptionHandler(MeetingException.class)
     public ResponseEntity<ErrorResponse> handleMeetingException(MeetingException e) {

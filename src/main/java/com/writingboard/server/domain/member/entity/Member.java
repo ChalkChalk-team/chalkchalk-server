@@ -29,14 +29,29 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl; // 지금은 안 씀
 
-    @Column(name = "provider_id", length = 100, nullable = false)
-    private String providerId; // Google sub ID
+    @Column(name = "provider_id", length = 100, nullable = false, unique = true)
+    private String providerId; // Guest: deviceId, OAuth: provider user ID
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private MemberStatus status = MemberStatus.ACTIVE;
 
+    /**
+     * 게스트 사용자 생성
+     */
+    public static Member createGuest(String deviceId, String name) {
+        Member member = new Member();
+        member.email = "guest-" + deviceId.substring(0, Math.min(8, deviceId.length())) + "@temp.local";
+        member.name = name != null && !name.isBlank() ? name : "Guest-" + deviceId.substring(0, 6).toUpperCase();
+        member.providerId = deviceId;
+        member.profileImageUrl = null;
+        member.status = MemberStatus.ACTIVE;
+        return member;
+    }
 
+    /**
+     * OAuth 사용자 생성 (향후 Apple Sign-In 등)
+     */
     public static Member create(String email, String name, String providerId, String profileImageUrl) {
         Member member = new Member();
         member.email = email;
