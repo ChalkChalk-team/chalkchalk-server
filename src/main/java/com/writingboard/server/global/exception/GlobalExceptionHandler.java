@@ -4,6 +4,7 @@ import com.writingboard.server.domain.auth.exception.AuthException;
 import com.writingboard.server.domain.chat.exception.ChatException;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
+import com.writingboard.server.domain.voice.exception.VoiceException;
 import com.writingboard.server.global.common.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ChatException.class)
     public ResponseEntity<ErrorResponse> handleChatException(ChatException e) {
         log.warn("ChatException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(VoiceException.class)
+    public ResponseEntity<ErrorResponse> handleVoiceException(VoiceException e) {
+        log.warn("VoiceException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
