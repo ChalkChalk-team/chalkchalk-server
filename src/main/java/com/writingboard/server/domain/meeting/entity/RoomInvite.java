@@ -63,7 +63,7 @@ public class RoomInvite extends BaseEntity {
     }
 
     public boolean isUsable() {
-        if (status == InviteStatus.EXPIRED) return false;
+        if (status == InviteStatu.EXPIRED) return false;
         return expiresAt == null || !expiresAt.isBefore(Instant.now());
     }
 
