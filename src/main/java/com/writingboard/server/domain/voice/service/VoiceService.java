@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class VoiceService {
 
@@ -32,6 +31,7 @@ public class VoiceService {
     /**
      * WebRTC 시그널 전송
      */
+    @Transactional(readOnly = true)
     public VoiceSignalDto sendSignal(Long memberId, String roomUuid, VoiceSignalRequest request) {
         validateSignalData(request);
 
