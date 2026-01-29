@@ -71,7 +71,7 @@ public class RoomInviteService {
     }
 
     private Member getMemberByUserName(String username) {
-        return memberRepository.findByUsername(username)
+        return memberRepository.findByName(username)
                 .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
