@@ -50,7 +50,7 @@ public class Member extends BaseEntity {
     }
 
     /**
-     * OAuth 사용자 생성 (향후 Apple Sign-In 등)
+     * OAuth 사용자 생성
      */
     public static Member create(String email, String name, String providerId, String profileImageUrl) {
         Member member = new Member();

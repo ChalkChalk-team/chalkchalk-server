@@ -1,0 +1,174 @@
+erDiagram
+  %% 유저 및 팀 조직
+  MEMBER {
+    bigint member_id PK
+    varchar name
+    varchar email
+    varchar password_hash "이메일 로그인용 (소셜은 null)"
+    varchar profile_image_url
+    varchar provider_id "google, kakao etc"
+    varchar status "ACTIVE|DELETED"
+    datetime created_at
+    datetime updated_at
+  }
+
+  TEAM {
+    bigint team_id PK
+    varchar name
+    varchar description
+    varchar team_profile_img_url
+    bigint created_by_member_id FK
+    datetime created_at
+    datetime updated_at
+  }
+
+  TEAM_MEMBER {
+    bigint team_member_id PK
+    bigint team_id FK
+    bigint member_id FK
+    varchar role   "OWNER|ADMIN|MEMBER"
+    varchar status "ACTIVE|PENDING|LEFT"
+    datetime joined_at
+    datetime created_at
+  }
+
+  TEAM_INVITATION {
+    bigint invite_id PK
+    bigint team_id FK
+    bigint inviter_member_id FK
+    varchar type "LINK|USER_SEARCH"
+    varchar invite_token
+    datetime expires_at
+    bigint invitee_member_id FK
+    varchar status
+    datetime created_at
+  }
+
+  %% 개인 관리 파일
+  PERSONAL_ASSET {
+    bigint personal_asset_id PK
+    bigint member_id FK "소유자"
+    varchar name
+    varchar type "PDF|IMAGE"
+    varchar storage_key "S3 경로 (개인 폴더)"
+    bigint size_bytes
+    int total_pages
+    datetime created_at
+    datetime deleted_at
+  }
+  %% 팀 관리 파일
+  TEAM_ASSET {
+    bigint asset_id PK
+    bigint team_id FK
+    bigint uploader_member_id FK
+
+    bigint parent_asset_id FK "이전 버전 ID"
+    bigint origin_personal_asset_id FK "개인 파일에서 가져온 경우 원본 ID"
+    varchar source_type "UPLOADED(팀에직접업로드)|IMPORTED(개인파일가져옴)"
+    varchar type "PDF|IMAGE"
+    varchar name
+    varchar storage_key "S3(R2 등) 경로 (팀 폴더)"
+    int version "default 1"
+    boolean is_latest "최신 버전 여부 (조회 최적화)"
+    int total_pages
+    varchar thumnail_image_url
+
+    datetime created_at
+    datetime deleted_at
+  }
+
+  %% 4. 회의실 (Meeting Room)
+  ROOM {
+    bigint room_id PK
+    bigint team_id FK
+    bigint host_id FK
+    varchar title
+    varchar password_hash
+    varchar status "OPEN|CLOSED"
+    datetime closed_at
+    datetime created_at
+  }
+
+  ROOM_INVITE {
+    bigint invite_id PK
+    bigint room_id FK
+    bigint issued_by_member_id FK
+    varchar invite_type
+    varchar invite_token
+    datetime expires_at
+    int max_uses
+    datetime created_at
+  }
+
+  ROOM_PARTICIPANT {
+    bigint participant_id PK
+    bigint room_id FK
+    bigint member_id FK
+    varchar session_id "웹소켓 세션 id"
+    varchar join_type
+    varchar role "HOST|MODERATOR|VIEWER"
+    varchar state "JOINED|LEFT"
+    datetime joined_at
+    datetime left_at
+  }
+
+  %% 회의실 내 자산 및 필기
+  ROOM_ASSET {
+    bigint room_asset_id PK
+    bigint room_id FK
+    bigint asset_id FK "반드시 TEAM_ASSET을 참조"
+    bigint added_by_member_id FK
+    int current_page_number "현재 공유 중인 페이지"
+    boolean is_active "현재 화면에 띄워진 파일인지"
+    varchar save_policy "OVERWRITE|NEW_COPY"
+    datetime added_at
+  }
+
+  %% 페이지별 필기 데이터
+  CANVAS_PAGE {
+    bigint canvas_page_id PK
+    bigint room_asset_id FK
+    int page_index
+
+    longblob raw_data "PencilKit PKDrawing"
+    datetime last_updated_at
+  }
+
+  %% 스냅샷
+  CANVAS_SNAPSHOT {
+    bigint snapshot_id PK
+    bigint room_asset_id FK
+    int page_index
+    longblob stroke_data "복구용 바이너리 백업"
+    varchar trigger_type "AUTO|MANUAL|ERROR"
+    datetime created_at
+  }
+
+  %% User & Team
+  MEMBER ||--o{ TEAM : "created_by"
+  MEMBER ||--o{ TEAM_MEMBER : "belongs"
+  TEAM ||--o{ TEAM_MEMBER : "has"
+  TEAM ||--o{ TEAM_INVITATION : "has"
+
+  %% Personal Assets
+  MEMBER ||--o{ PERSONAL_ASSET : "owns"
+
+  %% Team Assets (Import Logic)
+  TEAM ||--o{ TEAM_ASSET : "owns"
+  MEMBER ||--o{ TEAM_ASSET : "uploads"
+  PERSONAL_ASSET ||--o{ TEAM_ASSET : "imported_to"
+  TEAM_ASSET ||--o{ TEAM_ASSET : "parent_version"
+
+  %% Room
+  TEAM ||--o{ ROOM : "owns"
+  MEMBER ||--o{ ROOM : "hosts"
+  ROOM ||--o{ ROOM_INVITE : "has"
+  ROOM ||--o{ ROOM_PARTICIPANT : "has"
+  MEMBER ||--o{ ROOM_PARTICIPANT : "joins"
+
+  %% Room Assets & Canvas
+  ROOM ||--o{ ROOM_ASSET : "uses"
+  TEAM_ASSET ||--o{ ROOM_ASSET : "instantiated_as"
+
+  ROOM_ASSET ||--o{ CANVAS_PAGE : "has_pages"
+  ROOM_ASSET ||--o{ CANVAS_SNAPSHOT : "has_backups"

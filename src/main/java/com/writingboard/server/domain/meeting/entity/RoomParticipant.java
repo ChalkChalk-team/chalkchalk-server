@@ -74,5 +74,4 @@ public class RoomParticipant {
     public void heartbeat() {
         this.lastSeenAt = Instant.now();
     }
-
 }
