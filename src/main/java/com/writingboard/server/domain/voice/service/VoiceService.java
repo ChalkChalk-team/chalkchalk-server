@@ -33,10 +33,8 @@ public class VoiceService {
      * WebRTC 시그널 전송
      */
     public VoiceSignalDto sendSignal(Long memberId, String roomUuid, VoiceSignalRequest request) {
-        // 1. 시그널 데이터 검증
         validateSignalData(request);
 
-        // 2. 회의실 조회 및 상태 검증
         Room room = roomRepository.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new VoiceException(VoiceErrorCode.ROOM_NOT_FOUND));
 
@@ -44,14 +42,11 @@ public class VoiceService {
             throw new VoiceException(VoiceErrorCode.ROOM_CLOSED);
         }
 
-        // 3. 참여자 검증
         validateParticipant(room.getId(), memberId);
 
-        // 4. 발신자 조회
         Member sender = memberRepository.findById(memberId)
                 .orElseThrow(() -> new VoiceException(VoiceErrorCode.MEMBER_NOT_FOUND));
 
-        // 5. DTO 생성
         VoiceSignalDto signalDto = VoiceSignalDto.of(
                 roomUuid,
                 sender.getId(),
@@ -60,7 +55,6 @@ public class VoiceService {
                 request.getData()
         );
 
-        // 6. Redis Pub/Sub 발행
         voiceRedisPublisher.publish(roomUuid, signalDto);
 
         log.debug("음성 시그널 전송 완료: roomUuid={}, senderId={}, signalType={}",
