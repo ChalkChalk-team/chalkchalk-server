@@ -2,6 +2,7 @@ package com.writingboard.server.global.exception;
 
 import com.writingboard.server.domain.auth.exception.AuthException;
 import com.writingboard.server.domain.chat.exception.ChatException;
+import com.writingboard.server.domain.drawing.exception.DrawingException;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
 import com.writingboard.server.domain.personal.exception.PersonalException;
@@ -46,6 +47,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(VoiceException.class)
     public ResponseEntity<ErrorResponse> handleVoiceException(VoiceException e) {
         log.warn("VoiceException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(DrawingException.class)
+    public ResponseEntity<ErrorResponse> handleDrawingException(DrawingException e) {
+        log.warn("DrawingException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));

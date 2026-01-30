@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.writingboard.server.domain.chat.dto.response.ChatMessageDto;
 import com.writingboard.server.domain.chat.service.ChatRedisSubscriber;
+import com.writingboard.server.domain.drawing.dto.response.DrawingStrokeDto;
+import com.writingboard.server.domain.drawing.service.DrawingRedisSubscriber;
 import com.writingboard.server.domain.meeting.dto.FollowStateDto;
 import com.writingboard.server.domain.meeting.service.FollowRedisSubscriber;
 import com.writingboard.server.domain.voice.dto.response.VoiceSignalDto;
@@ -24,6 +26,7 @@ public class RedisPubSubConfig {
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory,
             ChatRedisSubscriber chatRedisSubscriber,
+            DrawingRedisSubscriber drawingRedisSubscriber,
             VoiceRedisSubscriber voiceRedisSubscriber,
             FollowRedisSubscriber followRedisSubscriber) {
 
@@ -35,6 +38,9 @@ public class RedisPubSubConfig {
 
         // voice:room:* 패턴의 모든 채널 구독
         container.addMessageListener(voiceRedisSubscriber, new PatternTopic("voice:room:*"));
+
+        // drawing:room:* 패턴의 모든 채널 구독
+        container.addMessageListener(drawingRedisSubscriber, new PatternTopic("drawing:room:*"));
 
         // follow:room:* 패턴의 모든 채널 구독
         container.addMessageListener(followRedisSubscriber, new PatternTopic("follow:room:*"));
@@ -75,6 +81,26 @@ public class RedisPubSubConfig {
 
         Jackson2JsonRedisSerializer<VoiceSignalDto> serializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, VoiceSignalDto.class);
+
+        template.setValueSerializer(serializer);
+        template.afterPropertiesSet();
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, DrawingStrokeDto> drawingRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+
+        RedisTemplate<String, DrawingStrokeDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        Jackson2JsonRedisSerializer<DrawingStrokeDto> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, DrawingStrokeDto.class);
 
         template.setValueSerializer(serializer);
         template.afterPropertiesSet();
