@@ -44,14 +44,13 @@ public class RoomInviteService {
         validateParticipant(room, memberId);
 
         Member issuer = getMemberById(memberId);
+        Member usedBy = getMemberByUserName(request.getName());
         int expireMinutes = request.getExpiresInMinutes() != null ? request.getExpiresInMinutes() : DEFAULT_EXPIRE_MINUTES;
 
         String token = UUID.randomUUID().toString();
         Instant expiresAt = Instant.now().plus(expireMinutes, ChronoUnit.MINUTES);
 
-        RoomInvite invite = RoomInvite.issue(
-                room, issuer, token, InviteType.LINK, expiresAt, null
-        );
+        RoomInvite invite = RoomInvite.issue(room, issuer, usedBy, token, InviteType.LINK, expiresAt);
 
         // 1. DB 저장
         inviteRepository.save(invite);
@@ -68,6 +67,11 @@ public class RoomInviteService {
 
     private Member getMemberById(Long memberId) {
         return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private Member getMemberByUserName(String username) {
+        return memberRepository.findByName(username)
                 .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
     }
 

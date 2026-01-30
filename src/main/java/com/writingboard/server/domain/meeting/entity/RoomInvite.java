@@ -31,6 +31,10 @@ public class RoomInvite extends BaseEntity {
     @JoinColumn(name = "issued_by", nullable = false, foreignKey = @ForeignKey(name = "fk_invite_issuer"))
     private Member issuedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "used_by", foreignKey = @ForeignKey(name = "fk_invite_user"))
+    private Member usedBy;
+
     @Column(name = "invite_token", length = 128, nullable = false)
     private String inviteToken;
 
@@ -41,30 +45,20 @@ public class RoomInvite extends BaseEntity {
     @Column(name = "expires_at")
     private Instant expiresAt;
 
-    @Column(name = "used_count", nullable = false)
-    private Integer usedCount = 0;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private InviteStatus status = InviteStatus.ACTIVE;
 
-    @Column(name = "revoked_at")
-    private Instant revokedAt;
-
-    @Column(name = "note", length = 255)
-    private String note;
-
-    public static RoomInvite issue(Room room, Member issuedBy, String token, InviteType type,
-                                   Instant expiresAt, String note) {
+    public static RoomInvite issue(Room room, Member issuedBy, Member usedBy, String token, InviteType type,
+                                   Instant expiresAt) {
         RoomInvite i = new RoomInvite();
         i.room = room;
         i.issuedBy = issuedBy;
+        i.usedBy = usedBy;
         i.inviteToken = token;
         i.type = type;
         i.expiresAt = expiresAt;
-        i.usedCount = 0;
         i.status = InviteStatus.ACTIVE;
-        i.note = note;
         return i;
     }
 
@@ -84,7 +78,7 @@ public class RoomInvite extends BaseEntity {
 
         if (expiresAt != null && expiresAt.isBefore(Instant.now())) {
             this.status = InviteStatus.EXPIRED;
-            this.revokedAt = Instant.now();
+            this.expiresAt = Instant.now();
         }
     }
 }
