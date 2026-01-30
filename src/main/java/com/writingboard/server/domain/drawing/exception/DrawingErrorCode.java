@@ -30,7 +30,12 @@ public enum DrawingErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "DRAWING_010", "사용자를 찾을 수 없습니다"),
 
     // Redis
-    REDIS_OPERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "DRAWING_011", "Redis 작업 중 오류가 발생했습니다");
+    REDIS_OPERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "DRAWING_011", "Redis 작업 중 오류가 발생했습니다"),
+
+    // Snapshot
+    SNAPSHOT_NOT_FOUND(HttpStatus.NOT_FOUND, "DRAWING_012", "스냅샷을 찾을 수 없습니다"),
+    SNAPSHOT_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "DRAWING_013", "스냅샷 저장에 실패했습니다"),
+    SNAPSHOT_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "DRAWING_014", "스냅샷 생성 권한이 없습니다 (HOST만 가능)");
 
     private final HttpStatus status;
     private final String code;

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 드로잉 비즈니스 로직 서비스
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class DrawingService {
 
     private static final String BUFFER_KEY_PREFIX = "drawing:buffer:";
-    private static final long BUFFER_TTL_SECONDS = 3600; // 1 hour
+    private static final String VERSION_KEY_PREFIX = "drawing:version:";
     private static final int MAX_STROKE_DATA_LENGTH = 100000;
 
     private final RoomRepository roomRepository;
@@ -58,6 +57,9 @@ public class DrawingService {
         Member sender = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.MEMBER_NOT_FOUND));
 
+        // 서버에서 버전 할당 (Redis INCR)
+        Long version = assignVersion(roomUuid, request.getPageIndex());
+
         DrawingStrokeDto strokeDto = DrawingStrokeDto.of(
                 roomUuid,
                 sender.getId(),
@@ -66,7 +68,7 @@ public class DrawingService {
                 request.getPageIndex(),
                 request.getStrokeId(),
                 request.getStrokeData(),
-                request.getVersion()
+                version
         );
 
         // Redis List에 버퍼링 (페이지별 분리)
@@ -147,17 +149,45 @@ public class DrawingService {
     }
 
     /**
-     * 스트로크를 Redis List에 버퍼링
+     * Redis INCR을 사용하여 버전 할당
+     */
+    private Long assignVersion(String roomUuid, Integer pageIndex) {
+        try {
+            String versionKey = buildVersionKey(roomUuid, pageIndex);
+            Long version = drawingRedisTemplate.opsForValue().increment(versionKey);
+
+            if (version == null) {
+                throw new DrawingException(DrawingErrorCode.REDIS_OPERATION_FAILED);
+            }
+
+            log.debug("버전 할당: roomUuid={}, pageIndex={}, version={}",
+                    roomUuid, pageIndex, version);
+
+            return version;
+        } catch (Exception e) {
+            log.error("버전 할당 실패: roomUuid={}, pageIndex={}", roomUuid, pageIndex, e);
+            throw new DrawingException(DrawingErrorCode.REDIS_OPERATION_FAILED);
+        }
+    }
+
+    /**
+     * 스트로크를 Redis List에 버퍼링 (TTL 없음 - 스냅샷 저장 시까지 유지)
      */
     private void bufferStroke(String roomUuid, Integer pageIndex, DrawingStrokeDto strokeDto) {
         try {
             String bufferKey = buildBufferKey(roomUuid, pageIndex);
             drawingRedisTemplate.opsForList().rightPush(bufferKey, strokeDto);
-            drawingRedisTemplate.expire(bufferKey, BUFFER_TTL_SECONDS, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("Redis 버퍼링 실패: roomUuid={}, pageIndex={}", roomUuid, pageIndex, e);
             throw new DrawingException(DrawingErrorCode.REDIS_OPERATION_FAILED);
         }
+    }
+
+    /**
+     * Redis 버전 키 생성
+     */
+    private String buildVersionKey(String roomUuid, Integer pageIndex) {
+        return VERSION_KEY_PREFIX + roomUuid + ":page:" + pageIndex;
     }
 
     /**
