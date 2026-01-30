@@ -30,7 +30,13 @@ public enum TeamErrorCode {
     INVALID_INVITATION(HttpStatus.BAD_REQUEST, "TEAM_205", "유효하지 않은 초대입니다"),
 
     // Member
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_301", "사용자를 찾을 수 없습니다");
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_301", "사용자를 찾을 수 없습니다"),
+
+    // Team Asset
+    ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_401", "자산을 찾을 수 없습니다"),
+    ASSET_MODIFY_FORBIDDEN(HttpStatus.FORBIDDEN, "TEAM_402", "자산을 수정/삭제할 권한이 없습니다"),
+    ASSET_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TEAM_403", "이미 삭제된 자산입니다"),
+    INVALID_ASSET_TYPE(HttpStatus.BAD_REQUEST, "TEAM_404", "지원하지 않는 파일 타입입니다");
 
     private final HttpStatus status;
     private final String code;

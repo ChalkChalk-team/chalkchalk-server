@@ -1,0 +1,23 @@
+package com.writingboard.server.domain.team.dto.request;
+
+import com.writingboard.server.domain.team.entity.enums.AssetSourceType;
+import com.writingboard.server.domain.team.entity.enums.AssetType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class AssetCreateRequest {
+
+    @NotNull(message = "자산 타입은 필수입니다")
+    private AssetType type;
+
+    @NotBlank(message = "자산 이름은 필수입니다")
+    @Size(max = 255, message = "자산 이름은 255자 이내여야 합니다")
+    private String name;
+
+    private AssetSourceType sourceType = AssetSourceType.UPLOADED;
+
+    private Long originPersonalAssetId;
+}
