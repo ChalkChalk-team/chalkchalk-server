@@ -10,11 +10,11 @@ import lombok.Data;
 @Data
 public class AssetCreateRequest {
 
-    @NotNull(message = "자산 타입은 필수입니다")
+    @NotNull(message = "파일 타입은 필수입니다")
     private AssetType type;
 
-    @NotBlank(message = "자산 이름은 필수입니다")
-    @Size(max = 255, message = "자산 이름은 255자 이내여야 합니다")
+    @NotBlank(message = "파일 이름은 필수입니다")
+    @Size(max = 255, message = "파일 이름은 255자 이내여야 합니다")
     private String name;
 
     private AssetSourceType sourceType = AssetSourceType.UPLOADED;

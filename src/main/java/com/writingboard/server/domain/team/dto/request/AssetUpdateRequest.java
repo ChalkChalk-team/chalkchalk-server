@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class AssetUpdateRequest {
 
-    @Size(max = 255, message = "자산 이름은 255자 이내여야 합니다")
+    @Size(max = 255, message = "파일 이름은 255자 이내여야 합니다")
     private String name;
 }

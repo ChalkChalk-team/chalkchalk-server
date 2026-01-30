@@ -5,6 +5,7 @@ import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.AssetListResponse;
 import com.writingboard.server.domain.team.dto.response.AssetResponse;
 import com.writingboard.server.domain.team.service.TeamAssetService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ public class TeamAssetController {
     private final TeamAssetService teamAssetService;
 
     @PostMapping
+    @Operation(summary = "팀 파일 저장", description = "팀 자료실 내에 파일을 저장한다.")
     public ResponseEntity<AssetResponse> createAsset(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -35,6 +37,7 @@ public class TeamAssetController {
     }
 
     @GetMapping
+    @Operation(summary = "팀 파일 목록 조회", description = "팀 자료실 내에 저장된 파일들의 목록을 조회한다.")
     public ResponseEntity<AssetListResponse> getAssets(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -45,6 +48,7 @@ public class TeamAssetController {
     }
 
     @GetMapping("/{assetId}")
+    @Operation(summary = "팀 파일 상세 조회", description = "팀 자료실 내에 저장된 특정 파일의 상세 정보를 조회한다.")
     public ResponseEntity<AssetResponse> getAsset(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -55,6 +59,7 @@ public class TeamAssetController {
     }
 
     @GetMapping("/{assetId}/versions")
+    @Operation(summary = "팀 파일 버전 히스토리 조회", description = "팀 자료실 내에 저장된 특정 파일의 버전 히스토리를 조회한다.")
     public ResponseEntity<List<AssetResponse>> getVersionHistory(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -65,6 +70,7 @@ public class TeamAssetController {
     }
 
     @PatchMapping("/{assetId}")
+    @Operation(summary = "팀 파일 정보 수정", description = "팀 자료실 내에 저장된 특정 파일의 정보를 수정한다.")
     public ResponseEntity<AssetResponse> updateAsset(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -76,6 +82,7 @@ public class TeamAssetController {
     }
 
     @DeleteMapping("/{assetId}")
+    @Operation(summary = "팀 파일 삭제", description = "팀 자료실 내에 저장된 특정 파일을 삭제(Soft delete)한다.(OWNER, ADMIN 권한 필요)")
     public ResponseEntity<Void> deleteAsset(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
@@ -86,6 +93,7 @@ public class TeamAssetController {
     }
 
     @PostMapping("/{assetId}/versions")
+    @Operation(summary = "팀 파일 새 버전 생성", description = "팀 자료실 내에 저장된 특정 파일의 새 버전을 생성한다.")
     public ResponseEntity<AssetResponse> createNewVersion(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,

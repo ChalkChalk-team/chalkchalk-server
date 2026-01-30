@@ -6,6 +6,5 @@ import lombok.Data;
 public class DirectInviteRequest {
 
     private Long memberId;
-
     private String memberName;
 }
