@@ -19,13 +19,16 @@ public class InvitationController {
     @GetMapping
     public ResponseEntity<List<TeamInvitationResponse>> getMyPendingInvitations(
             @AuthenticationPrincipal Long memberId) {
-        return ResponseEntity.ok(teamInvitationService.getMyPendingInvitations(memberId));
+
+        List<TeamInvitationResponse> myPendingInvitations = teamInvitationService.getMyPendingInvitations(memberId);
+        return ResponseEntity.ok(myPendingInvitations);
     }
 
     @PostMapping("/link/{inviteToken}/accept")
     public ResponseEntity<Void> acceptLinkInvitation(
             @AuthenticationPrincipal Long memberId,
             @PathVariable String inviteToken) {
+
         teamInvitationService.acceptLinkInvitation(memberId, inviteToken);
         return ResponseEntity.ok().build();
     }
@@ -34,6 +37,7 @@ public class InvitationController {
     public ResponseEntity<Void> acceptDirectInvitation(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long invitationId) {
+
         teamInvitationService.acceptDirectInvitation(memberId, invitationId);
         return ResponseEntity.ok().build();
     }
@@ -42,6 +46,7 @@ public class InvitationController {
     public ResponseEntity<Void> rejectInvitation(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long invitationId) {
+
         teamInvitationService.rejectInvitation(memberId, invitationId);
         return ResponseEntity.ok().build();
     }

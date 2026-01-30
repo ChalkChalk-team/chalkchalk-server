@@ -60,6 +60,7 @@ public class TeamInvitationService {
     public TeamInvitationResponse createDirectInvitation(Long memberId, Long teamId, DirectInviteRequest request) {
         Team team = getTeamById(teamId);
         Member inviter = getMemberById(memberId);
+
         validateAdminOrOwner(teamId, memberId);
 
         // 초대 대상 찾기

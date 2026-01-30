@@ -22,13 +22,16 @@ public class TeamMemberController {
     public ResponseEntity<List<TeamMemberResponse>> getTeamMembers(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId) {
-        return ResponseEntity.ok(teamMemberService.getTeamMembers(memberId, teamId));
+
+        List<TeamMemberResponse> teamMembers = teamMemberService.getTeamMembers(teamId, memberId);
+        return ResponseEntity.ok(teamMembers);
     }
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> leaveTeam(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId) {
+
         teamMemberService.leaveTeam(memberId, teamId);
         return ResponseEntity.noContent().build();
     }
@@ -38,6 +41,7 @@ public class TeamMemberController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
             @PathVariable Long targetMemberId) {
+
         teamMemberService.kickMember(memberId, teamId, targetMemberId);
         return ResponseEntity.noContent().build();
     }
@@ -48,6 +52,8 @@ public class TeamMemberController {
             @PathVariable Long teamId,
             @PathVariable Long targetMemberId,
             @RequestBody @Valid RoleChangeRequest request) {
-        return ResponseEntity.ok(teamMemberService.changeRole(memberId, teamId, targetMemberId, request));
+
+        TeamMemberResponse updatedMember = teamMemberService.changeRole(memberId, teamId, targetMemberId, request);
+        return ResponseEntity.ok(updatedMember);
     }
 }

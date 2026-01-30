@@ -23,7 +23,7 @@ public class TeamMemberService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
 
-    public List<TeamMemberResponse> getTeamMembers(Long memberId, Long teamId) {
+    public List<TeamMemberResponse> getTeamMembers(Long teamId, Long memberId) {
         validateTeamExists(teamId);
         validateTeamMember(teamId, memberId);
 

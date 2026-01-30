@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE) // create 메서드 사용 유도
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Member extends BaseEntity {
 
     @Id
@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
      */
     public static Member createGuest(String deviceId, String name) {
         Member member = new Member();
-        member.email = "guest-" + deviceId.substring(0, Math.min(8, deviceId.length())) + "@temp.local";
+        member.email = "guest-" + deviceId.substring(0, Math.min(10, deviceId.length())) + "@temp.local";
         member.name = name != null && !name.isBlank() ? name : "Guest-" + deviceId.substring(0, 6).toUpperCase();
         member.providerId = deviceId;
         member.profileImageUrl = null;

@@ -25,21 +25,26 @@ public class TeamController {
     public ResponseEntity<TeamResponse> createTeam(
             @AuthenticationPrincipal Long memberId,
             @RequestBody @Valid TeamCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(teamService.createTeam(memberId, request));
+
+        TeamResponse team = teamService.createTeam(memberId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(team);
     }
 
     @GetMapping
     public ResponseEntity<List<TeamSummaryResponse>> getMyTeams(
             @AuthenticationPrincipal Long memberId) {
-        return ResponseEntity.ok(teamService.getMyTeams(memberId));
+
+        List<TeamSummaryResponse> teams = teamService.getMyTeams(memberId);
+        return ResponseEntity.ok(teams);
     }
 
     @GetMapping("/{teamId}")
     public ResponseEntity<TeamResponse> getTeam(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId) {
-        return ResponseEntity.ok(teamService.getTeam(memberId, teamId));
+
+        TeamResponse team = teamService.getTeam(memberId, teamId);
+        return ResponseEntity.ok(team);
     }
 
     @PatchMapping("/{teamId}")
@@ -47,7 +52,9 @@ public class TeamController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
             @RequestBody @Valid TeamUpdateRequest request) {
-        return ResponseEntity.ok(teamService.updateTeam(memberId, teamId, request));
+
+        TeamResponse team = teamService.updateTeam(memberId, teamId, request);
+        return ResponseEntity.ok(team);
     }
 
     @DeleteMapping("/{teamId}")

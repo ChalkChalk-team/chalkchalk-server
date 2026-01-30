@@ -65,7 +65,7 @@ public class TeamInvitation extends BaseEntity {
         invitation.team = team;
         invitation.inviter = inviter;
         invitation.invitee = invitee;
-        invitation.type = TeamInvitationType.USER_SEARCH;
+        invitation.type = TeamInvitationType.DIRECT;
         invitation.inviteToken = null;
         invitation.expiresAt = null;
         invitation.status = TeamInvitationStatus.PENDING;
@@ -105,6 +105,6 @@ public class TeamInvitation extends BaseEntity {
     }
 
     public boolean isDirectInvitation() {
-        return this.type == TeamInvitationType.USER_SEARCH;
+        return this.type == TeamInvitationType.DIRECT;
     }
 }

@@ -26,8 +26,9 @@ public class TeamInvitationController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
             @RequestBody(required = false) @Valid TeamInviteLinkRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(teamInvitationService.createLinkInvitation(memberId, teamId, request));
+
+        TeamInviteLinkResponse linkInvitation = teamInvitationService.createLinkInvitation(memberId, teamId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(linkInvitation);
     }
 
     @PostMapping("/direct")
@@ -35,14 +36,17 @@ public class TeamInvitationController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
             @RequestBody @Valid DirectInviteRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(teamInvitationService.createDirectInvitation(memberId, teamId, request));
+
+        TeamInvitationResponse directInvitation = teamInvitationService.createDirectInvitation(memberId, teamId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(directInvitation);
     }
 
     @GetMapping
     public ResponseEntity<List<TeamInvitationResponse>> getTeamInvitations(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId) {
-        return ResponseEntity.ok(teamInvitationService.getTeamInvitations(memberId, teamId));
+
+        List<TeamInvitationResponse> invitations = teamInvitationService.getTeamInvitations(memberId, teamId);
+        return ResponseEntity.ok(invitations);
     }
 }
