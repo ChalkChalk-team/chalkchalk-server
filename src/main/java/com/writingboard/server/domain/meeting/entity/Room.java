@@ -3,6 +3,7 @@ package com.writingboard.server.domain.meeting.entity;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantRole;
 import com.writingboard.server.domain.meeting.entity.enums.RoomStatus;
 import com.writingboard.server.domain.member.entity.Member;
+import com.writingboard.server.domain.team.entity.Team;
 import com.writingboard.server.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,14 @@ public class Room extends BaseEntity {
     @Column(name = "room_id")
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "host_id", nullable = false, foreignKey = @ForeignKey(name = "fk_room_host"))
+    private Member host;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id", nullable = false, foreignKey = @ForeignKey(name = "fk_room_team"))
+    private Team team;
+
     @Column(name = "room_uuid", length = 36, nullable = false)
     private String roomUuid;
 
@@ -33,10 +42,6 @@ public class Room extends BaseEntity {
 
     @Column(name = "password_hash", length = 255)
     private String passwordHash;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "host_id", nullable = false, foreignKey = @ForeignKey(name = "fk_room_host"))
-    private Member host;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
