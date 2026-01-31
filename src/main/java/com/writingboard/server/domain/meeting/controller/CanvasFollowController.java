@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/api/rooms/{roomUuid}/follow")
 @RequiredArgsConstructor
 @Tag(name = "Follow", description = "페이지 팔로우 API")
-public class FollowController {
+public class CanvasFollowController {
 
     private final FollowService followService;
 
