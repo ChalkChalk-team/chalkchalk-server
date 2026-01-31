@@ -30,7 +30,7 @@ public class RoomParticipant {
     @JoinColumn(name = "member_id", nullable = false, foreignKey = @ForeignKey(name = "fk_participant_member"))
     private Member member;
 
-    @Column(name = "session_id", optional = false)
+    @Column(name = "session_id")
     private String sessionId;
 
     @Enumerated(EnumType.STRING)

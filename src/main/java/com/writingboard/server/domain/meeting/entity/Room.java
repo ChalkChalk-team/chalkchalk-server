@@ -59,6 +59,9 @@ public class Room extends BaseEntity {
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomInvite> invites = new ArrayList<>();
 
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomAsset> assets = new ArrayList<>();
+
     public static Room create(String roomUuid, String title, Member host, Team team, String passwordHash) {
         Room r = new Room();
         r.roomUuid = roomUuid;
