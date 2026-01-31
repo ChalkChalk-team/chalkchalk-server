@@ -6,17 +6,20 @@ import com.writingboard.server.domain.meeting.dto.response.*;
 import com.writingboard.server.domain.meeting.entity.Room;
 import com.writingboard.server.domain.meeting.entity.RoomInvite;
 import com.writingboard.server.domain.meeting.entity.RoomParticipant;
-import com.writingboard.server.domain.meeting.entity.enums.InviteType;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantRole;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantState;
 import com.writingboard.server.domain.meeting.entity.enums.RoomStatus;
-import com.writingboard.server.domain.meeting.exception.ErrorCode;
+import com.writingboard.server.domain.meeting.exception.MeetingErrorCode;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.meeting.repository.RoomInviteRepository;
 import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
 import com.writingboard.server.domain.meeting.repository.RoomRepository;
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
+import com.writingboard.server.domain.team.entity.Team;
+import com.writingboard.server.domain.team.entity.enums.TeamMemberStatus;
+import com.writingboard.server.domain.team.repository.TeamMemberRepository;
+import com.writingboard.server.domain.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +36,8 @@ import java.util.UUID;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
     private final RoomParticipantRepository participantRepository;
     private final RoomInviteRepository inviteRepository;
     private final MemberRepository memberRepository;
@@ -46,12 +51,21 @@ public class RoomService {
     public RoomCreateResponse createRoom(Long memberId, RoomCreateRequest request) {
         Member host = getMemberById(memberId);
 
+        Team team = teamRepository.findById(request.getTeamId())
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.TEAM_NOT_FOUND));
+
+        // 팀 멤버 검증
+        boolean isTeamMember = teamMemberRepository.existsByTeamIdAndMemberIdAndStatus(team.getId(), host.getId(), TeamMemberStatus.ACTIVE);
+        if (!isTeamMember) {
+            throw new MeetingException(MeetingErrorCode.NOT_TEAM_MEMBER);
+        }
+
         String roomUuid = UUID.randomUUID().toString();
         String passwordHash = request.getPassword() != null
                 ? passwordEncoder.encode(request.getPassword())
                 : null;
 
-        Room room = Room.create(roomUuid, request.getTitle(), host, passwordHash);
+        Room room = Room.create(roomUuid, request.getTitle(), host, team, passwordHash);
         room.join(host, ParticipantRole.HOST);
 
         roomRepository.save(room);
@@ -111,7 +125,7 @@ public class RoomService {
         if (room.getPasswordHash() != null) {
             if (request == null || request.getPassword() == null ||
                     !passwordEncoder.matches(request.getPassword(), room.getPasswordHash())) {
-                throw new MeetingException(ErrorCode.INVALID_PASSWORD);
+                throw new MeetingException(MeetingErrorCode.INVALID_PASSWORD);
             }
         }
 
@@ -137,13 +151,13 @@ public class RoomService {
         } else {
             // 2차: DB Fallback (Redis 장애 또는 캐시 미스 대비)
             RoomInvite invite = inviteRepository.findByInviteToken(inviteToken)
-                    .orElseThrow(() -> new MeetingException(ErrorCode.INVITE_NOT_FOUND));
+                    .orElseThrow(() -> new MeetingException(MeetingErrorCode.INVITE_NOT_FOUND));
 
             // 만료 체크 및 상태 업데이트
             invite.checkAndExpire();
 
             if (!invite.isUsable()) {
-                throw new MeetingException(ErrorCode.INVITE_EXPIRED);
+                throw new MeetingException(MeetingErrorCode.INVITE_EXPIRED);
             }
 
             room = invite.getRoom();
@@ -154,7 +168,7 @@ public class RoomService {
         // 비밀번호 검증
         if (room.getPasswordHash() != null) {
             if (password == null || !passwordEncoder.matches(password, room.getPasswordHash())) {
-                throw new MeetingException(ErrorCode.INVALID_PASSWORD);
+                throw new MeetingException(MeetingErrorCode.INVALID_PASSWORD);
             }
         }
 
@@ -183,15 +197,15 @@ public class RoomService {
 
         RoomParticipant requester = participantRepository
                 .findByRoomIdAndMemberId(room.getId(), requesterId)
-                .orElseThrow(() -> new MeetingException(ErrorCode.NOT_PARTICIPANT));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.NOT_PARTICIPANT));
 
         if (requester.getRole() != ParticipantRole.HOST &&
                 requester.getRole() != ParticipantRole.MODERATOR) {
-            throw new MeetingException(ErrorCode.FORBIDDEN);
+            throw new MeetingException(MeetingErrorCode.FORBIDDEN);
         }
 
         if (room.getHost().getId().equals(targetMemberId)) {
-            throw new MeetingException(ErrorCode.CANNOT_KICK_HOST);
+            throw new MeetingException(MeetingErrorCode.CANNOT_KICK_HOST);
         }
 
         Member targetMember = getMemberById(targetMemberId);
@@ -200,23 +214,23 @@ public class RoomService {
 
     private Room getRoomByUuid(String roomUuid) {
         return roomRepository.findByRoomUuid(roomUuid)
-                .orElseThrow(() -> new MeetingException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.ROOM_NOT_FOUND));
     }
 
     private Member getMemberById(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validateHost(Room room, Long memberId) {
         if (!room.getHost().getId().equals(memberId)) {
-            throw new MeetingException(ErrorCode.FORBIDDEN);
+            throw new MeetingException(MeetingErrorCode.FORBIDDEN);
         }
     }
 
     private void validateRoomOpen(Room room) {
         if (room.getStatus() != RoomStatus.OPEN) {
-            throw new MeetingException(ErrorCode.ROOM_CLOSED);
+            throw new MeetingException(MeetingErrorCode.ROOM_CLOSED);
         }
     }
 }

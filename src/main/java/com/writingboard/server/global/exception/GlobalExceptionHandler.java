@@ -30,8 +30,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMeetingException(MeetingException e) {
         log.warn("MeetingException: {}", e.getMessage());
         return ResponseEntity
-                .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+                .status(e.getMeetingErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getMeetingErrorCode().getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(ChatException.class)

@@ -6,7 +6,10 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum ErrorCode {
+public enum MeetingErrorCode {
+    // Team
+    TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_001", "팀을 찾을) 수 없습니다"),
+    NOT_TEAM_MEMBER(HttpStatus.FORBIDDEN, "TEAM_002", "팀 멤버가 아닙니다"),
 
     // Room
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "ROOM_001", "회의실을 찾을 수 없습니다"),

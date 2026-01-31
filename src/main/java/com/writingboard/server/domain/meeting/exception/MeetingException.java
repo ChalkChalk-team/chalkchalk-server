@@ -5,15 +5,15 @@ import lombok.Getter;
 @Getter
 public class MeetingException extends RuntimeException {
 
-    private final ErrorCode errorCode;
+    private final MeetingErrorCode meetingErrorCode;
 
-    public MeetingException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+    public MeetingException(MeetingErrorCode meetingErrorCode) {
+        super(meetingErrorCode.getMessage());
+        this.meetingErrorCode = meetingErrorCode;
     }
 
-    public MeetingException(ErrorCode errorCode, String message) {
+    public MeetingException(MeetingErrorCode meetingErrorCode, String message) {
         super(message);
-        this.errorCode = errorCode;
+        this.meetingErrorCode = meetingErrorCode;
     }
 }

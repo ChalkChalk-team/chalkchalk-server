@@ -7,6 +7,9 @@ import lombok.Data;
 @Data
 public class RoomCreateRequest {
 
+    @NotBlank(message = "팀 ID는 필수입니다")
+    private Long teamId;
+
     @NotBlank(message = "회의실 제목은 필수입니다")
     @Size(max = 100, message = "제목은 100자 이내여야 합니다")
     private String title;

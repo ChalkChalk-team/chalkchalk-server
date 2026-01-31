@@ -82,6 +82,7 @@ erDiagram
     bigint room_id PK
     bigint team_id FK
     bigint host_id FK
+    varchar room_uuid
     varchar title
     varchar password_hash
     varchar status "OPEN|CLOSED"
@@ -105,7 +106,6 @@ erDiagram
     bigint room_id FK
     bigint member_id FK
     varchar session_id "웹소켓 세션 id"
-    varchar join_type
     varchar role "HOST|MODERATOR|VIEWER"
     varchar state "JOINED|LEFT"
     datetime joined_at

@@ -59,11 +59,12 @@ public class Room extends BaseEntity {
     @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomInvite> invites = new ArrayList<>();
 
-    public static Room create(String roomUuid, String title, Member host, String passwordHash) {
+    public static Room create(String roomUuid, String title, Member host, Team team, String passwordHash) {
         Room r = new Room();
         r.roomUuid = roomUuid;
         r.title = title;
         r.host = host;
+        r.team = team;
         r.passwordHash = passwordHash;
         r.status = RoomStatus.OPEN;
         r.lastActivityAt = Instant.now();
