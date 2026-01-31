@@ -137,10 +137,12 @@ public class RoomService {
 
     /**
      * 초대 토큰으로 회의실 입장
+     * 팀 멤버가 아닌 경우 VIEWER 권한으로 입장
      */
     @Transactional
     public RoomJoinResponse joinRoomByInvite(Long memberId, String inviteToken, String password) {
         Room room;
+        RoomInvite invite = null;
 
         // Redis에서 조회
         String roomUuid = inviteTokenRedisService.getRoomUuid(inviteToken);
@@ -148,15 +150,20 @@ public class RoomService {
         if (roomUuid != null) {
             // Redis에 있음 → 유효한 초대 (Fast Path)
             room = getRoomByUuid(roomUuid);
+            // DB에서 초대 정보 조회 (사용 횟수 추적용)
+            invite = inviteRepository.findByInviteToken(inviteToken).orElse(null);
         } else {
             // 2차: DB Fallback (Redis 장애 또는 캐시 미스 대비)
-            RoomInvite invite = inviteRepository.findByInviteToken(inviteToken)
+            invite = inviteRepository.findByInviteToken(inviteToken)
                     .orElseThrow(() -> new MeetingException(MeetingErrorCode.INVITE_NOT_FOUND));
 
             // 만료 체크 및 상태 업데이트
             invite.checkAndExpire();
 
             if (!invite.isUsable()) {
+                if (invite.hasUsageLimit() && invite.getUsedCount() >= invite.getMaxUses()) {
+                    throw new MeetingException(MeetingErrorCode.INVITE_USAGE_EXCEEDED);
+                }
                 throw new MeetingException(MeetingErrorCode.INVITE_EXPIRED);
             }
 
@@ -173,7 +180,19 @@ public class RoomService {
         }
 
         Member member = getMemberById(memberId);
-        RoomParticipant participant = room.join(member, ParticipantRole.PARTICIPANT);
+
+        // 팀 멤버 여부 확인하여 역할 결정
+        boolean isTeamMember = teamMemberRepository.existsByTeamIdAndMemberIdAndStatus(
+                room.getTeam().getId(), memberId, TeamMemberStatus.ACTIVE);
+
+        ParticipantRole role = isTeamMember ? ParticipantRole.PARTICIPANT : ParticipantRole.VIEWER;
+
+        RoomParticipant participant = room.join(member, role);
+
+        // 초대 사용 횟수 증가
+        if (invite != null) {
+            invite.use();
+        }
 
         return RoomJoinResponse.of(room, participant);
     }
