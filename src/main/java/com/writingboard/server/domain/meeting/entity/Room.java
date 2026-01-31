@@ -40,7 +40,7 @@ public class Room extends BaseEntity {
     @Column(name = "title", length = 100, nullable = false)
     private String title;
 
-    @Column(name = "password_hash", length = 255)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)

@@ -32,8 +32,8 @@ public class RoomController {
             @AuthenticationPrincipal Long memberId,
             @RequestBody @Valid RoomCreateRequest request) {
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(roomService.createRoom(memberId, request));
+        RoomCreateResponse createdRoom = roomService.createRoom(memberId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
     }
 
     /**
