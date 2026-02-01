@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-/**
- * 드로잉 도메인 에러 코드
- */
+
 @Getter
 @RequiredArgsConstructor
 public enum DrawingErrorCode {

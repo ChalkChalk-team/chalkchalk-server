@@ -50,9 +50,6 @@ public class DrawingSnapshot {
         this.createdAt = Instant.now();
     }
 
-    /**
-     * 드로잉 스냅샷 생성 팩토리 메서드
-     */
     public static DrawingSnapshot create(String roomUuid, Integer pageIndex, Long version,
                                         String snapshotData, Long createdBy, String createdByName) {
         return new DrawingSnapshot(roomUuid, pageIndex, version, snapshotData, createdBy, createdByName);

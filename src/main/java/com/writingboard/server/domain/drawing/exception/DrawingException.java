@@ -2,9 +2,7 @@ package com.writingboard.server.domain.drawing.exception;
 
 import lombok.Getter;
 
-/**
- * 드로잉 도메인 커스텀 예외
- */
+
 @Getter
 public class DrawingException extends RuntimeException {
 

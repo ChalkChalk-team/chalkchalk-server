@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/**
- * 드로잉 스냅샷 생성 요청 DTO
- */
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-/**
- * 드로잉 스냅샷 응답 DTO
- */
+
 @Getter
 @NoArgsConstructor
 public class DrawingSnapshotResponse {
@@ -37,9 +35,7 @@ public class DrawingSnapshotResponse {
         this.createdAt = createdAt;
     }
 
-    /**
-     * DrawingSnapshot 문서를 DTO로 변환
-     */
+
     public static DrawingSnapshotResponse from(DrawingSnapshot snapshot) {
         return DrawingSnapshotResponse.builder()
                 .id(snapshot.getId())
