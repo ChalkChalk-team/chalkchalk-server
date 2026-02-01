@@ -108,9 +108,15 @@ public class DrawingService {
 
     /**
      * 스트로크 요청 데이터 검증
+     * WebSocket으로는 ADD, REMOVE만 허용 (SNAPSHOT은 REST API 사용)
      */
     private void validateStrokeRequest(DrawingStrokeRequest request) {
         DrawingMessageType type = request.getType();
+
+        // SNAPSHOT 타입은 WebSocket으로 받지 않음 (REST API 전용)
+        if (type == DrawingMessageType.SNAPSHOT) {
+            throw new DrawingException(DrawingErrorCode.INVALID_MESSAGE_TYPE);
+        }
 
         // ADD, REMOVE 타입은 strokeId 필수
         if ((type == DrawingMessageType.ADD || type == DrawingMessageType.REMOVE)
@@ -118,15 +124,10 @@ public class DrawingService {
             throw new DrawingException(DrawingErrorCode.STROKE_ID_REQUIRED);
         }
 
-        // ADD, SNAPSHOT 타입은 strokeData 필수
-        if ((type == DrawingMessageType.ADD || type == DrawingMessageType.SNAPSHOT)
+        // ADD 타입은 strokeData 필수
+        if (type == DrawingMessageType.ADD
                 && (request.getStrokeData() == null || request.getStrokeData().isBlank())) {
             throw new DrawingException(DrawingErrorCode.STROKE_DATA_REQUIRED);
-        }
-
-        // SNAPSHOT 타입은 version 필수
-        if (type == DrawingMessageType.SNAPSHOT && request.getVersion() == null) {
-            throw new DrawingException(DrawingErrorCode.VERSION_REQUIRED);
         }
 
         // strokeData 크기 검증

@@ -9,8 +9,6 @@ import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,11 +58,10 @@ public class DrawingSnapshotService {
     }
 
     /**
-     * 특정 페이지의 최신 스냅샷 조회
+     * 특정 캔버스 페이지의 최신 스냅샷 조회
      */
     public Optional<DrawingSnapshot> getLatestSnapshot(String roomUuid, Integer pageIndex) {
-        PageRequest pageRequest = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "version"));
-        return snapshotRepository.findLatestByRoomUuidAndPageIndex(roomUuid, pageIndex, pageRequest);
+        return snapshotRepository.findFirstByRoomUuidAndPageIndexOrderByVersionDesc(roomUuid, pageIndex);
     }
 
     /**

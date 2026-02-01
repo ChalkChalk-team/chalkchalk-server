@@ -11,12 +11,14 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum DrawingErrorCode {
 
+    // Message Type Validation
+    INVALID_MESSAGE_TYPE(HttpStatus.BAD_REQUEST, "DRAWING_001", "WebSocket으로는 ADD, REMOVE만 가능합니다 (SNAPSHOT은 REST API 사용)"),
+
     // Stroke Data Validation
-    INVALID_STROKE_DATA(HttpStatus.BAD_REQUEST, "DRAWING_001", "유효하지 않은 스트로크 데이터입니다"),
-    STROKE_DATA_TOO_LARGE(HttpStatus.BAD_REQUEST, "DRAWING_002", "스트로크 데이터가 너무 큽니다 (최대 100000자)"),
-    STROKE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "DRAWING_003", "ADD 또는 REMOVE 타입은 strokeId가 필수입니다"),
-    STROKE_DATA_REQUIRED(HttpStatus.BAD_REQUEST, "DRAWING_004", "ADD 또는 SNAPSHOT 타입은 strokeData가 필수입니다"),
-    VERSION_REQUIRED(HttpStatus.BAD_REQUEST, "DRAWING_005", "SNAPSHOT 타입은 version이 필수입니다"),
+    INVALID_STROKE_DATA(HttpStatus.BAD_REQUEST, "DRAWING_002", "유효하지 않은 스트로크 데이터입니다"),
+    STROKE_DATA_TOO_LARGE(HttpStatus.BAD_REQUEST, "DRAWING_003", "스트로크 데이터가 너무 큽니다 (최대 100000자)"),
+    STROKE_ID_REQUIRED(HttpStatus.BAD_REQUEST, "DRAWING_004", "ADD 또는 REMOVE 타입은 strokeId가 필수입니다"),
+    STROKE_DATA_REQUIRED(HttpStatus.BAD_REQUEST, "DRAWING_005", "ADD 타입은 strokeData가 필수입니다"),
     INVALID_PAGE_INDEX(HttpStatus.BAD_REQUEST, "DRAWING_006", "유효하지 않은 페이지 인덱스입니다"),
 
     // Room
