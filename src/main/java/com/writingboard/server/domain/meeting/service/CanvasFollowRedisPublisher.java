@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FollowRedisPublisher {
+public class CanvasFollowRedisPublisher {
 
     private static final String CHANNEL_PREFIX = "follow:room:";
 

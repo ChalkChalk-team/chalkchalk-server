@@ -86,7 +86,9 @@ public class RoomController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
             @RequestBody(required = false) RoomJoinRequest request) {
-        return ResponseEntity.ok(roomService.joinRoom(memberId, roomUuid, request));
+
+        RoomJoinResponse joined = roomService.joinRoom(memberId, roomUuid, request);
+        return ResponseEntity.ok(joined);
     }
 
     /**

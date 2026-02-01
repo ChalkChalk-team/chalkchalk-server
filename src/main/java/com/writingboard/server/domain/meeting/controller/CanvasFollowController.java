@@ -2,7 +2,7 @@ package com.writingboard.server.domain.meeting.controller;
 
 import com.writingboard.server.domain.meeting.dto.request.ViewingStateRequest;
 import com.writingboard.server.domain.meeting.dto.response.ParticipantViewingResponse;
-import com.writingboard.server.domain.meeting.service.FollowService;
+import com.writingboard.server.domain.meeting.service.CanvasFollowService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,7 +19,7 @@ import java.util.List;
 @Tag(name = "Follow", description = "페이지 팔로우 API")
 public class CanvasFollowController {
 
-    private final FollowService followService;
+    private final CanvasFollowService canvasFollowService;
 
     @PostMapping("/viewing")
     @Operation(summary = "현재 보고 있는 페이지 업데이트", description = "현재 보고 있는 자료와 페이지를 업데이트하고 다른 참가자에게 브로드캐스트합니다")
@@ -27,7 +27,7 @@ public class CanvasFollowController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
             @RequestBody @Valid ViewingStateRequest request) {
-        followService.updateViewingState(memberId, roomUuid, request.getRoomAssetId(), request.getPageIndex());
+        canvasFollowService.updateViewingState(memberId, roomUuid, request.getRoomAssetId(), request.getPageIndex());
         return ResponseEntity.ok().build();
     }
 
@@ -37,7 +37,7 @@ public class CanvasFollowController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
             @PathVariable Long targetMemberId) {
-        followService.startFollow(memberId, roomUuid, targetMemberId);
+        canvasFollowService.startFollow(memberId, roomUuid, targetMemberId);
         return ResponseEntity.ok().build();
     }
 
@@ -46,7 +46,7 @@ public class CanvasFollowController {
     public ResponseEntity<Void> stopFollow(
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid) {
-        followService.stopFollow(memberId, roomUuid);
+        canvasFollowService.stopFollow(memberId, roomUuid);
         return ResponseEntity.noContent().build();
     }
 
@@ -55,6 +55,6 @@ public class CanvasFollowController {
     public ResponseEntity<List<ParticipantViewingResponse>> getParticipantsViewing(
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid) {
-        return ResponseEntity.ok(followService.getParticipantsViewing(memberId, roomUuid));
+        return ResponseEntity.ok(canvasFollowService.getParticipantsViewing(memberId, roomUuid));
     }
 }

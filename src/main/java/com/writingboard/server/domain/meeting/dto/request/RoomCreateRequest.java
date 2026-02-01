@@ -1,13 +1,14 @@
 package com.writingboard.server.domain.meeting.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class RoomCreateRequest {
 
-    @NotBlank(message = "팀 ID는 필수입니다")
+    @NotNull
     private Long teamId;
 
     @NotBlank(message = "회의실 제목은 필수입니다")

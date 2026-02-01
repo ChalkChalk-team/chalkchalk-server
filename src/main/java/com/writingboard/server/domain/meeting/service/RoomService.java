@@ -116,6 +116,7 @@ public class RoomService {
 
     /**
      * 회의실 입장
+     * 재입장 시 기존 역할 유지 (HOST, MODERATOR 등)
      */
     @Transactional
     public RoomJoinResponse joinRoom(Long memberId, String roomUuid, RoomJoinRequest request) {
@@ -130,9 +131,22 @@ public class RoomService {
         }
 
         Member member = getMemberById(memberId);
-        RoomParticipant participant = room.join(member, ParticipantRole.PARTICIPANT);
 
-        return RoomJoinResponse.of(room, participant);
+        // 기존 참가 기록 확인
+        ParticipantRole roleToAssign = ParticipantRole.PARTICIPANT;
+        boolean isRejoining = participantRepository.findByRoomIdAndMemberId(room.getId(), memberId)
+                .isPresent();
+
+        if (isRejoining) {
+            // 재입장인 경우 기존 역할 유지를 위해 null 전달
+            // Room.join()의 rejoin() 로직에서 null이면 기존 role 유지
+            RoomParticipant participant = room.join(member, null);
+            return RoomJoinResponse.of(room, participant);
+        } else {
+            // 최초 입장인 경우 PARTICIPANT 권한 부여
+            RoomParticipant participant = room.join(member, roleToAssign);
+            return RoomJoinResponse.of(room, participant);
+        }
     }
 
     /**

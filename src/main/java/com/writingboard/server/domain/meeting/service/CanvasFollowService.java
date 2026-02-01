@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class FollowService {
+public class CanvasFollowService {
 
     private static final String VIEWING_STATE_KEY_PREFIX = "viewing:room:";
     private static final String FOLLOW_KEY_PREFIX = "follow:member:";
@@ -35,7 +35,7 @@ public class FollowService {
     private final RoomRepository roomRepository;
     private final RoomParticipantRepository participantRepository;
     private final RoomAssetRepository roomAssetRepository;
-    private final FollowRedisPublisher followRedisPublisher;
+    private final CanvasFollowRedisPublisher canvasFollowRedisPublisher;
     private final RedisTemplate<String, String> stringRedisTemplate;
 
     public void updateViewingState(Long memberId, String roomUuid, Long roomAssetId, Integer pageIndex) {
@@ -52,7 +52,7 @@ public class FollowService {
                 roomAssetId,
                 pageIndex
         );
-        followRedisPublisher.publish(roomUuid, state);
+        canvasFollowRedisPublisher.publish(roomUuid, state);
 
         log.debug("Updated viewing state: memberId={}, roomUuid={}, assetId={}, page={}",
                 memberId, roomUuid, roomAssetId, pageIndex);
