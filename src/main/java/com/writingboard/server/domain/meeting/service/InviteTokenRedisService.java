@@ -17,7 +17,7 @@ public class InviteTokenRedisService {
     private static final String KEY_PREFIX = "invite:";
 
     /**
-     * 초대 토큰을 Redis에 저장 (TTL 적용)
+     * 초대 토큰을 Redis에 저장 (TTL : default 5분)
      *
      * @param inviteToken 초대 토큰
      * @param roomUuid    회의실 UUID

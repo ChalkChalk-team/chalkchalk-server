@@ -116,7 +116,7 @@ public class RoomService {
 
     /**
      * 회의실 입장
-     * 재입장 시 기존 역할 유지 (HOST, MODERATOR 등)
+     * 재입장 시 기존 역할 유지
      */
     @Transactional
     public RoomJoinResponse joinRoom(Long memberId, String roomUuid, RoomJoinRequest request) {
@@ -156,28 +156,22 @@ public class RoomService {
     @Transactional
     public RoomJoinResponse joinRoomByInvite(Long memberId, String inviteToken, String password) {
         Room room;
-        RoomInvite invite = null;
 
         // Redis에서 조회
         String roomUuid = inviteTokenRedisService.getRoomUuid(inviteToken);
 
         if (roomUuid != null) {
-            // Redis에 있음 → 유효한 초대 (Fast Path)
+            // Redis에 있음
             room = getRoomByUuid(roomUuid);
-            // DB에서 초대 정보 조회 (사용 횟수 추적용)
-            invite = inviteRepository.findByInviteToken(inviteToken).orElse(null);
         } else {
-            // 2차: DB Fallback (Redis 장애 또는 캐시 미스 대비)
-            invite = inviteRepository.findByInviteToken(inviteToken)
+            // DB
+            RoomInvite invite = inviteRepository.findByInviteToken(inviteToken)
                     .orElseThrow(() -> new MeetingException(MeetingErrorCode.INVITE_NOT_FOUND));
 
             // 만료 체크 및 상태 업데이트
             invite.checkAndExpire();
 
             if (!invite.isUsable()) {
-                if (invite.hasUsageLimit() && invite.getUsedCount() >= invite.getMaxUses()) {
-                    throw new MeetingException(MeetingErrorCode.INVITE_USAGE_EXCEEDED);
-                }
                 throw new MeetingException(MeetingErrorCode.INVITE_EXPIRED);
             }
 
@@ -203,11 +197,6 @@ public class RoomService {
 
         RoomParticipant participant = room.join(member, role);
 
-        // 초대 사용 횟수 증가
-        if (invite != null) {
-            invite.use();
-        }
-
         return RoomJoinResponse.of(room, participant);
     }
 
@@ -222,7 +211,7 @@ public class RoomService {
     }
 
     /**
-     * 참여자 강제 퇴장 (호스트/모더레이터)
+     * 참여자 강제 퇴장
      */
     @Transactional
     public void kickParticipant(Long requesterId, String roomUuid, Long targetMemberId) {

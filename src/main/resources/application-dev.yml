@@ -14,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: false
     properties:
       hibernate:
@@ -23,7 +23,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-    com.writingboard.server: DEBUG
+    com.writingboard.server: info
     org.springframework.messaging: DEBUG
     org.springframework.web.socket: DEBUG
     org.springframework.data.mongodb: DEBUG

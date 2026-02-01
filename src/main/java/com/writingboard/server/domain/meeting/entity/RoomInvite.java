@@ -49,12 +49,6 @@ public class RoomInvite extends BaseEntity {
     @Column(name = "status", length = 20, nullable = false)
     private InviteStatus status = InviteStatus.ACTIVE;
 
-    @Column(name = "max_uses")
-    private Integer maxUses;
-
-    @Column(name = "used_count", nullable = false)
-    private Integer usedCount = 0;
-
     public static RoomInvite issue(Room room, Member issuedBy, Member usedBy, String token, InviteType type,
                                    Instant expiresAt) {
         RoomInvite i = new RoomInvite();
@@ -65,43 +59,16 @@ public class RoomInvite extends BaseEntity {
         i.type = type;
         i.expiresAt = expiresAt;
         i.status = InviteStatus.ACTIVE;
-        i.maxUses = null;
-        i.usedCount = 0;
-        return i;
-    }
-
-    public static RoomInvite issueOneTime(Room room, Member issuedBy, String token, InviteType type,
-                                          Instant expiresAt) {
-        RoomInvite i = issue(room, issuedBy, null, token, type, expiresAt);
-        i.maxUses = 1;
         return i;
     }
 
     public boolean isUsable() {
-        if (status == InviteStatus.EXPIRED || status == InviteStatus.USED) return false;
-        if (expiresAt != null && expiresAt.isBefore(Instant.now())) return false;
-        if (maxUses != null && usedCount >= maxUses) return false;
-        return true;
-    }
-
-    public boolean canUse() {
-        return isUsable();
-    }
-
-    public void use() {
-        this.usedCount++;
-        if (maxUses != null && usedCount >= maxUses) {
-            this.status = InviteStatus.USED;
-        }
-    }
-
-    public boolean hasUsageLimit() {
-        return this.maxUses != null;
+        if (status == InviteStatus.EXPIRED) return false;
+        return expiresAt == null || !expiresAt.isBefore(Instant.now());
     }
 
     /**
      * 초대가 만료됐는지 체크하고, 만료됐으면 상태를 EXPIRED로 변경
-     * DB Fallback 시 호출
      */
     public void checkAndExpire() {
         if (status == InviteStatus.EXPIRED) {

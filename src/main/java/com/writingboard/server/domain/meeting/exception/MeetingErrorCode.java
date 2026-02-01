@@ -24,7 +24,6 @@ public enum MeetingErrorCode {
     // Invite
     INVITE_NOT_FOUND(HttpStatus.NOT_FOUND, "INVITE_001", "초대를 찾을 수 없습니다"),
     INVITE_EXPIRED(HttpStatus.BAD_REQUEST, "INVITE_002", "만료된 초대입니다"),
-    INVITE_USAGE_EXCEEDED(HttpStatus.BAD_REQUEST, "INVITE_003", "초대 링크 사용 횟수를 초과했습니다"),
 
     // Asset
     ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "ASSET_001", "자료를 찾을 수 없습니다"),
