@@ -32,8 +32,8 @@ public class RoomController {
             @AuthenticationPrincipal Long memberId,
             @RequestBody @Valid RoomCreateRequest request) {
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(roomService.createRoom(memberId, request));
+        RoomCreateResponse createdRoom = roomService.createRoom(memberId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdRoom);
     }
 
     /**
@@ -53,7 +53,9 @@ public class RoomController {
     @GetMapping("/{roomUuid}")
     public ResponseEntity<RoomDetailResponse> getRoom(
             @PathVariable String roomUuid) {
-        return ResponseEntity.ok(roomService.getRoom(roomUuid));
+
+        RoomDetailResponse roomDetail = roomService.getRoom(roomUuid);
+        return ResponseEntity.ok(roomDetail);
     }
 
     /**
@@ -84,7 +86,9 @@ public class RoomController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
             @RequestBody(required = false) RoomJoinRequest request) {
-        return ResponseEntity.ok(roomService.joinRoom(memberId, roomUuid, request));
+
+        RoomJoinResponse joined = roomService.joinRoom(memberId, roomUuid, request);
+        return ResponseEntity.ok(joined);
     }
 
     /**

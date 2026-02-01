@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.writingboard.server.domain.chat.dto.response.ChatMessageDto;
 import com.writingboard.server.domain.chat.service.ChatRedisSubscriber;
+import com.writingboard.server.domain.meeting.dto.FollowStateDto;
+import com.writingboard.server.domain.meeting.service.FollowRedisSubscriber;
 import com.writingboard.server.domain.voice.dto.response.VoiceSignalDto;
 import com.writingboard.server.domain.voice.service.VoiceRedisSubscriber;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +24,8 @@ public class RedisPubSubConfig {
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory redisConnectionFactory,
             ChatRedisSubscriber chatRedisSubscriber,
-            VoiceRedisSubscriber voiceRedisSubscriber) {
+            VoiceRedisSubscriber voiceRedisSubscriber,
+            FollowRedisSubscriber followRedisSubscriber) {
 
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
@@ -32,6 +35,9 @@ public class RedisPubSubConfig {
 
         // voice:room:* 패턴의 모든 채널 구독
         container.addMessageListener(voiceRedisSubscriber, new PatternTopic("voice:room:*"));
+
+        // follow:room:* 패턴의 모든 채널 구독
+        container.addMessageListener(followRedisSubscriber, new PatternTopic("follow:room:*"));
 
         return container;
     }
@@ -69,6 +75,26 @@ public class RedisPubSubConfig {
 
         Jackson2JsonRedisSerializer<VoiceSignalDto> serializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, VoiceSignalDto.class);
+
+        template.setValueSerializer(serializer);
+        template.afterPropertiesSet();
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, FollowStateDto> followRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+
+        RedisTemplate<String, FollowStateDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        Jackson2JsonRedisSerializer<FollowStateDto> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, FollowStateDto.class);
 
         template.setValueSerializer(serializer);
         template.afterPropertiesSet();

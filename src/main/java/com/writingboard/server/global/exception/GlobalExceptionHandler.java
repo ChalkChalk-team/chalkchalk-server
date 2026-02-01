@@ -4,6 +4,7 @@ import com.writingboard.server.domain.auth.exception.AuthException;
 import com.writingboard.server.domain.chat.exception.ChatException;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
+import com.writingboard.server.domain.personal.exception.PersonalException;
 import com.writingboard.server.domain.team.exception.TeamException;
 import com.writingboard.server.domain.voice.exception.VoiceException;
 import com.writingboard.server.global.common.ErrorResponse;
@@ -30,8 +31,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMeetingException(MeetingException e) {
         log.warn("MeetingException: {}", e.getMessage());
         return ResponseEntity
-                .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+                .status(e.getMeetingErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getMeetingErrorCode().getCode(), e.getMessage()));
     }
 
     @ExceptionHandler(ChatException.class)
@@ -61,6 +62,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TeamException.class)
     public ResponseEntity<ErrorResponse> handleTeamException(TeamException e) {
         log.warn("TeamException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(PersonalException.class)
+    public ResponseEntity<ErrorResponse> handlePersonalException(PersonalException e) {
+        log.warn("PersonalException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));

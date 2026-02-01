@@ -4,10 +4,9 @@ import com.writingboard.server.domain.meeting.dto.request.InviteLinkRequest;
 import com.writingboard.server.domain.meeting.dto.response.InviteLinkResponse;
 import com.writingboard.server.domain.meeting.entity.Room;
 import com.writingboard.server.domain.meeting.entity.RoomInvite;
-import com.writingboard.server.domain.meeting.entity.enums.InviteStatus;
 import com.writingboard.server.domain.meeting.entity.enums.InviteType;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantState;
-import com.writingboard.server.domain.meeting.exception.ErrorCode;
+import com.writingboard.server.domain.meeting.exception.MeetingErrorCode;
 import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.meeting.repository.RoomInviteRepository;
 import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
@@ -62,24 +61,24 @@ public class RoomInviteService {
 
     private Room getRoomByUuid(String roomUuid) {
         return roomRepository.findByRoomUuid(roomUuid)
-                .orElseThrow(() -> new MeetingException(ErrorCode.ROOM_NOT_FOUND));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.ROOM_NOT_FOUND));
     }
 
     private Member getMemberById(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Member getMemberByUserName(String username) {
         return memberRepository.findByName(username)
-                .orElseThrow(() -> new MeetingException(ErrorCode.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.MEMBER_NOT_FOUND));
     }
 
     private void validateParticipant(Room room, Long memberId) {
         boolean isParticipant = participantRepository
                 .existsByRoomIdAndMemberIdAndState(room.getId(), memberId, ParticipantState.JOINED);
         if (!isParticipant) {
-            throw new MeetingException(ErrorCode.NOT_PARTICIPANT);
+            throw new MeetingException(MeetingErrorCode.NOT_PARTICIPANT);
         }
     }
 }
