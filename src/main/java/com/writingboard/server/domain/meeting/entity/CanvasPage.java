@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+@Deprecated
 @Entity
 @Table(name = "canvas_page", uniqueConstraints = {
         @UniqueConstraint(name = "uk_canvas_page_asset_index", columnNames = {"room_asset_id", "page_index"})

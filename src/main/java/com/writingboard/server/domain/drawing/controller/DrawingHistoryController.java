@@ -21,16 +21,18 @@ public class DrawingHistoryController {
     private final DrawingService drawingService;
 
     /**
-     * 특정 페이지의 스트로크 히스토리 조회
+     * 특정 RoomAsset 페이지의 스트로크 히스토리 조회
      */
-    @GetMapping("/{roomUuid}/strokes")
+    @GetMapping("/{roomUuid}/assets/{roomAssetId}/strokes")
     public ResponseEntity<List<DrawingStrokeDto>> getStrokeHistory(
             @PathVariable String roomUuid,
+            @PathVariable Long roomAssetId,
             @RequestParam Integer pageIndex) {
 
-        log.debug("스트로크 히스토리 조회 요청: roomUuid={}, pageIndex={}", roomUuid, pageIndex);
+        log.debug("스트로크 히스토리 조회 요청: roomUuid={}, roomAssetId={}, pageIndex={}",
+                roomUuid, roomAssetId, pageIndex);
 
-        List<DrawingStrokeDto> strokes = drawingService.getStrokeHistory(roomUuid, pageIndex);
+        List<DrawingStrokeDto> strokes = drawingService.getStrokeHistory(roomUuid, roomAssetId, pageIndex);
         return ResponseEntity.ok(strokes);
     }
 }

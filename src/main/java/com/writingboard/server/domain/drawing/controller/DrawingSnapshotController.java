@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/rooms/{roomUuid}/snapshots")
+@RequestMapping("/api/rooms/{roomUuid}/assets/{roomAssetId}/snapshots")
 @RequiredArgsConstructor
 public class DrawingSnapshotController {
 
@@ -48,10 +48,11 @@ public class DrawingSnapshotController {
     public ResponseEntity<DrawingSnapshotResponse> createSnapshot(
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
+            @PathVariable Long roomAssetId,
             @RequestBody @Valid DrawingSnapshotRequest request) {
 
-        log.debug("스냅샷 생성 요청: roomUuid={}, memberId={}, pageIndex={}, version={}",
-                roomUuid, memberId, request.getPageIndex(), request.getLastIncludedVersion());
+        log.debug("스냅샷 생성 요청: roomUuid={}, roomAssetId={}, memberId={}, pageIndex={}, version={}",
+                roomUuid, roomAssetId, memberId, request.getPageIndex(), request.getLastIncludedVersion());
 
         Room room = roomRepository.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.ROOM_NOT_FOUND));
@@ -75,6 +76,7 @@ public class DrawingSnapshotController {
         DrawingSnapshot snapshot = snapshotService.saveSnapshot(
                 memberId,
                 roomUuid,
+                roomAssetId,
                 request.getPageIndex(),
                 request.getLastIncludedVersion(),
                 request.getSnapshotData()
@@ -88,16 +90,18 @@ public class DrawingSnapshotController {
     }
 
     /**
-     * 특정 페이지의 최신 스냅샷 조회
+     * 특정 RoomAsset 페이지의 최신 스냅샷 조회
      */
     @GetMapping("/latest")
     public ResponseEntity<DrawingSnapshotResponse> getLatestSnapshot(
             @PathVariable String roomUuid,
+            @PathVariable Long roomAssetId,
             @RequestParam Integer pageIndex) {
 
-        log.debug("최신 스냅샷 조회 요청: roomUuid={}, pageIndex={}", roomUuid, pageIndex);
+        log.debug("최신 스냅샷 조회 요청: roomUuid={}, roomAssetId={}, pageIndex={}",
+                roomUuid, roomAssetId, pageIndex);
 
-        DrawingSnapshot snapshot = snapshotService.getLatestSnapshot(roomUuid, pageIndex)
+        DrawingSnapshot snapshot = snapshotService.getLatestSnapshot(roomAssetId, pageIndex)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.SNAPSHOT_NOT_FOUND));
 
         return ResponseEntity.ok(DrawingSnapshotResponse.from(snapshot));
@@ -113,6 +117,7 @@ public class DrawingSnapshotController {
 
             DrawingStrokeDto notificationDto = DrawingStrokeDto.of(
                     snapshot.getRoomUuid(),
+                    snapshot.getRoomAssetId(),
                     creator.getId(),
                     creator.getName(),
                     DrawingMessageType.SNAPSHOT,
@@ -124,8 +129,8 @@ public class DrawingSnapshotController {
 
             drawingRedisPublisher.publish(snapshot.getRoomUuid(), notificationDto);
 
-            log.debug("스냅샷 생성 알림 브로드캐스트: roomUuid={}, version={}",
-                    snapshot.getRoomUuid(), snapshot.getVersion());
+            log.debug("스냅샷 생성 알림 브로드캐스트: roomUuid={}, roomAssetId={}, version={}",
+                    snapshot.getRoomUuid(), snapshot.getRoomAssetId(), snapshot.getVersion());
 
         } catch (Exception e) {
             log.error("스냅샷 알림 브로드캐스트 실패", e);

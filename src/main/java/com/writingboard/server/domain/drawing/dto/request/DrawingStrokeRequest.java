@@ -10,6 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
+/**
+ * 드로잉 스트로크 요청 DTO (WebSocket 전용)
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +20,9 @@ public class DrawingStrokeRequest {
 
     @NotNull(message = "메시지 타입은 필수입니다")
     private DrawingMessageType type;
+
+    @NotNull(message = "RoomAsset ID는 필수입니다")
+    private Long roomAssetId;
 
     @NotNull(message = "페이지 인덱스는 필수입니다")
     @Min(value = 0, message = "페이지 인덱스는 0 이상이어야 합니다")

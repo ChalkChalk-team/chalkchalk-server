@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.Base64;
 
+@Deprecated
 @Getter
 @Builder
 @AllArgsConstructor

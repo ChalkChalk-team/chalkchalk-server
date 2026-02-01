@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Base64;
 
+@Deprecated
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)

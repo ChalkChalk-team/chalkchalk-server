@@ -35,41 +35,41 @@ public class DrawingSnapshotService {
      * 스냅샷 저장 및 Redis 버퍼 정리
      */
     @Transactional
-    public DrawingSnapshot saveSnapshot(Long memberId, String roomUuid, Integer pageIndex,
+    public DrawingSnapshot saveSnapshot(Long memberId, String roomUuid, Long roomAssetId, Integer pageIndex,
                                        Long lastIncludedVersion, String snapshotData) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.MEMBER_NOT_FOUND));
 
         // 스냅샷 저장
         DrawingSnapshot snapshot = DrawingSnapshot.create(
-                roomUuid, pageIndex, lastIncludedVersion, snapshotData,
+                roomUuid, roomAssetId, pageIndex, lastIncludedVersion, snapshotData,
                 member.getId(), member.getName()
         );
 
         DrawingSnapshot saved = snapshotRepository.save(snapshot);
 
-        log.info("스냅샷 저장 완료: roomUuid={}, pageIndex={}, version={}",
-                roomUuid, pageIndex, lastIncludedVersion);
+        log.info("스냅샷 저장 완료: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
+                roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
 
         // Redis 버퍼 정리 (LTRIM)
-        trimRedisBuffer(roomUuid, pageIndex, lastIncludedVersion);
+        trimRedisBuffer(roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
 
         return saved;
     }
 
     /**
-     * 특정 캔버스 페이지의 최신 스냅샷 조회
+     * 특정 RoomAsset 페이지의 최신 스냅샷 조회
      */
-    public Optional<DrawingSnapshot> getLatestSnapshot(String roomUuid, Integer pageIndex) {
-        return snapshotRepository.findFirstByRoomUuidAndPageIndexOrderByVersionDesc(roomUuid, pageIndex);
+    public Optional<DrawingSnapshot> getLatestSnapshot(Long roomAssetId, Integer pageIndex) {
+        return snapshotRepository.findFirstByRoomAssetIdAndPageIndexOrderByVersionDesc(roomAssetId, pageIndex);
     }
 
     /**
      * Redis 버퍼 정리 (LTRIM)
      * lastIncludedVersion까지의 스트로크를 제거
      */
-    private void trimRedisBuffer(String roomUuid, Integer pageIndex, Long lastIncludedVersion) {
-        String bufferKey = buildBufferKey(roomUuid, pageIndex);
+    private void trimRedisBuffer(String roomUuid, Long roomAssetId, Integer pageIndex, Long lastIncludedVersion) {
+        String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);
 
         try {
             // LTRIM: 인덱스 lastIncludedVersion 이후부터 끝까지 유지
@@ -88,8 +88,9 @@ public class DrawingSnapshotService {
 
     /**
      * Redis 버퍼 키 생성
+     * Pattern: drawing:buffer:room:{roomUuid}:asset:{roomAssetId}:page:{pageIndex}
      */
-    private String buildBufferKey(String roomUuid, Integer pageIndex) {
-        return BUFFER_KEY_PREFIX + roomUuid + ":page:" + pageIndex;
+    private String buildBufferKey(String roomUuid, Long roomAssetId, Integer pageIndex) {
+        return BUFFER_KEY_PREFIX + "room:" + roomUuid + ":asset:" + roomAssetId + ":page:" + pageIndex;
     }
 }

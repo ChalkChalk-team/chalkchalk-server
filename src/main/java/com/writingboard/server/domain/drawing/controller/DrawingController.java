@@ -16,7 +16,7 @@ import java.security.Principal;
 
 /**
  * 드로잉 WebSocket 컨트롤러
- * Client 전송 -> /app/room/{roomUuid}/drawing
+ * Client 전송 -> /app/room/{roomUuid}/asset/{roomAssetId}/drawing
  * Redis Pub/Sub -> /topic/room/{roomUuid}/drawing
  */
 @Slf4j
@@ -29,15 +29,16 @@ public class DrawingController {
     /**
      * 드로잉 스트로크 메시지 처리
      */
-    @MessageMapping("/room/{roomUuid}/drawing")
+    @MessageMapping("/room/{roomUuid}/asset/{roomAssetId}/drawing")
     public void handleDrawingStroke(
             @DestinationVariable String roomUuid,
+            @DestinationVariable Long roomAssetId,
             @Payload DrawingStrokeRequest request,
             Principal principal) {
 
         Long memberId = getMemberId(principal);
-        log.debug("드로잉 스트로크 수신: roomUuid={}, memberId={}, type={}, pageIndex={}",
-                roomUuid, memberId, request.getType(), request.getPageIndex());
+        log.debug("드로잉 스트로크 수신: roomUuid={}, roomAssetId={}, memberId={}, type={}, pageIndex={}",
+                roomUuid, roomAssetId, memberId, request.getType(), request.getPageIndex());
 
         drawingService.sendStroke(memberId, roomUuid, request);
     }

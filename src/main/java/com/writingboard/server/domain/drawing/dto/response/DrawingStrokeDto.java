@@ -8,11 +8,15 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 
 
+/**
+ * 드로잉 스트로크 응답 DTO
+ */
 @Getter
 @NoArgsConstructor
 public class DrawingStrokeDto {
 
     private String roomUuid;
+    private Long roomAssetId;
     private Long senderId;
     private String senderName;
     private DrawingMessageType type;
@@ -23,11 +27,12 @@ public class DrawingStrokeDto {
     private Instant timestamp;
 
     @Builder
-    public DrawingStrokeDto(String roomUuid, Long senderId, String senderName,
+    public DrawingStrokeDto(String roomUuid, Long roomAssetId, Long senderId, String senderName,
                             DrawingMessageType type, Integer pageIndex,
                             String strokeId, String strokeData, Long version,
                             Instant timestamp) {
         this.roomUuid = roomUuid;
+        this.roomAssetId = roomAssetId;
         this.senderId = senderId;
         this.senderName = senderName;
         this.type = type;
@@ -41,11 +46,12 @@ public class DrawingStrokeDto {
     /**
      * DrawingStrokeDto 생성 팩토리 메서드
      */
-    public static DrawingStrokeDto of(String roomUuid, Long senderId, String senderName,
+    public static DrawingStrokeDto of(String roomUuid, Long roomAssetId, Long senderId, String senderName,
                                       DrawingMessageType type, Integer pageIndex,
                                       String strokeId, String strokeData, Long version) {
         return DrawingStrokeDto.builder()
                 .roomUuid(roomUuid)
+                .roomAssetId(roomAssetId)
                 .senderId(senderId)
                 .senderName(senderName)
                 .type(type)
