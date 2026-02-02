@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+@Deprecated
 @Entity
 @Table(name = "canvas_snapshot", indexes = {
         @Index(name = "idx_canvas_snapshot_asset_page", columnList = "room_asset_id, page_index")
