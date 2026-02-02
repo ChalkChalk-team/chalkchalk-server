@@ -9,9 +9,7 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-/**
- * 드로잉 Redis 메시지 구독 서비스
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

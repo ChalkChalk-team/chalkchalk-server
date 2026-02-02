@@ -6,9 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-/**
- * 드로잉 Redis 메시지 발행 서비스
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

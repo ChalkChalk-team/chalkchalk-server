@@ -14,11 +14,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
-/**
- * 드로잉 WebSocket 컨트롤러
- * Client 전송 -> /app/room/{roomUuid}/asset/{roomAssetId}/drawing
- * Redis Pub/Sub -> /topic/room/{roomUuid}/drawing
- */
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor

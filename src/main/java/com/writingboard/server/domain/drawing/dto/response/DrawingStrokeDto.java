@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 
 
-/**
- * 드로잉 스트로크 응답 DTO
- */
+
 @Getter
 @NoArgsConstructor
 public class DrawingStrokeDto {
@@ -43,9 +41,7 @@ public class DrawingStrokeDto {
         this.timestamp = timestamp;
     }
 
-    /**
-     * DrawingStrokeDto 생성 팩토리 메서드
-     */
+
     public static DrawingStrokeDto of(String roomUuid, Long roomAssetId, Long senderId, String senderName,
                                       DrawingMessageType type, Integer pageIndex,
                                       String strokeId, String strokeData, Long version) {

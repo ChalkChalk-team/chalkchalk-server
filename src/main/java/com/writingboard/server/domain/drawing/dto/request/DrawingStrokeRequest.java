@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
-/**
- * 드로잉 스트로크 요청 DTO (WebSocket 전용)
- */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

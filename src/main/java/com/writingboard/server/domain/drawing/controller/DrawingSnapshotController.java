@@ -26,9 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 드로잉 스냅샷 REST API 컨트롤러
- */
+
 @Slf4j
 @RestController
 @RequestMapping("/api/rooms/{roomUuid}/assets/{roomAssetId}/snapshots")

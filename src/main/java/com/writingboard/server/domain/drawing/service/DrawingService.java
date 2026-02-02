@@ -22,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * 드로잉 비즈니스 로직 서비스
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -55,7 +53,6 @@ public class DrawingService {
             throw new DrawingException(DrawingErrorCode.ROOM_CLOSED);
         }
 
-        // RoomAsset 검증 (roomAssetId가 해당 room에 속하는지 확인)
         RoomAsset roomAsset = validateRoomAsset(room.getId(), request.getRoomAssetId());
 
         validateParticipant(room.getId(), memberId);
@@ -63,7 +60,6 @@ public class DrawingService {
         Member sender = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.MEMBER_NOT_FOUND));
 
-        // 서버에서 버전 할당 (Redis INCR)
         Long version = assignVersion(roomUuid, request.getRoomAssetId(), request.getPageIndex());
 
         DrawingStrokeDto strokeDto = DrawingStrokeDto.of(
@@ -78,10 +74,9 @@ public class DrawingService {
                 version
         );
 
-        // Redis List에 버퍼링 (asset + 페이지별 분리)
+
         bufferStroke(roomUuid, request.getRoomAssetId(), request.getPageIndex(), strokeDto);
 
-        // Redis Pub/Sub로 실시간 브로드캐스트
         drawingRedisPublisher.publish(roomUuid, strokeDto);
 
         log.debug("드로잉 스트로크 전송 완료: roomUuid={}, roomAssetId={}, senderId={}, type={}, pageIndex={}",
@@ -120,24 +115,20 @@ public class DrawingService {
     private void validateStrokeRequest(DrawingStrokeRequest request) {
         DrawingMessageType type = request.getType();
 
-        // SNAPSHOT 타입은 WebSocket으로 받지 않음 (REST API 전용)
         if (type == DrawingMessageType.SNAPSHOT) {
             throw new DrawingException(DrawingErrorCode.INVALID_MESSAGE_TYPE);
         }
 
-        // ADD, REMOVE 타입은 strokeId 필수
         if ((type == DrawingMessageType.ADD || type == DrawingMessageType.REMOVE)
                 && (request.getStrokeId() == null || request.getStrokeId().isBlank())) {
             throw new DrawingException(DrawingErrorCode.STROKE_ID_REQUIRED);
         }
 
-        // ADD 타입은 strokeData 필수
         if (type == DrawingMessageType.ADD
                 && (request.getStrokeData() == null || request.getStrokeData().isBlank())) {
             throw new DrawingException(DrawingErrorCode.STROKE_DATA_REQUIRED);
         }
 
-        // strokeData 크기 검증
         if (request.getStrokeData() != null
                 && request.getStrokeData().length() > MAX_STROKE_DATA_LENGTH) {
             throw new DrawingException(DrawingErrorCode.STROKE_DATA_TOO_LARGE);

@@ -15,10 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-/**
- * 드로잉 스냅샷 서비스
- * MongoDB 저장 및 Redis 버퍼 정리
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -74,7 +71,7 @@ public class DrawingSnapshotService {
     }
 
     /**
-     * Redis 버퍼 정리 (LTRIM)
+     * Redis 버퍼 정리
      */
     private void trimRedisBuffer(String roomUuid, Long roomAssetId, Integer pageIndex, Long lastIncludedVersion) {
         String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);

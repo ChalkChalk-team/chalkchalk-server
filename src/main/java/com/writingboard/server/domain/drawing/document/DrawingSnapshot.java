@@ -10,10 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-/**
- * 드로잉 스냅샷 MongoDB 문서
- * RoomAsset의 페이지별 PKDrawing 병합 데이터 저장
- */
+
 @Document(collection = "drawing_snapshots")
 @CompoundIndex(name = "idx_asset_page_version", def = "{'roomAssetId': 1, 'pageIndex': 1, 'version': -1}")
 @CompoundIndex(name = "idx_room_page_version", def = "{'roomUuid': 1, 'pageIndex': 1, 'version': -1}")
@@ -55,9 +52,6 @@ public class DrawingSnapshot {
         this.createdAt = Instant.now();
     }
 
-    /**
-     * 드로잉 스냅샷 생성 팩토리 메서드
-     */
     public static DrawingSnapshot create(String roomUuid, Long roomAssetId, Integer pageIndex, Long version,
                                         String snapshotData, Long createdBy, String createdByName) {
         return new DrawingSnapshot(roomUuid, roomAssetId, pageIndex, version, snapshotData, createdBy, createdByName);

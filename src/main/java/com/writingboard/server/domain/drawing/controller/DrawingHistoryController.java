@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 드로잉 히스토리 REST API 컨트롤러
- */
+
 @Slf4j
 @RestController
 @RequestMapping("/api/rooms")
