@@ -141,8 +141,7 @@ public class DrawingService {
      * RoomAsset 검증 (roomAssetId가 해당 room에 속하는지 확인)
      */
     private RoomAsset validateRoomAsset(Long roomId, Long roomAssetId) {
-        return roomAssetRepository.findById(roomAssetId)
-                .filter(asset -> asset.getRoom().getId().equals(roomId))
+        return roomAssetRepository.findByIdAndRoomId(roomAssetId, roomId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.ROOM_ASSET_NOT_FOUND));
     }
 

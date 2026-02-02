@@ -1,10 +1,36 @@
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
+    mongodb:
+      uri: ${MONGO_URI}
+
   datasource:
-    url: ${DB_URL}           # 배포할 때 주입
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: validate     # 배포 환경 안전장치
+      ddl-auto: validate
     show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+    com.writingboard.server: info
+    org.springframework.messaging: warn
+    org.springframework.web.socket: warn
+    org.springframework.data.mongodb: warn
+    org.springframework.data.redis: warn
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: 7200000
+  refresh-expiration: 604800000
