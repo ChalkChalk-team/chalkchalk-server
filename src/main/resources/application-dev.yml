@@ -31,5 +31,5 @@ logging:
 
 jwt:
   secret: ${JWT_SECRET}
-  access-expiration: 1800000   # 30분 (ms 단위)
+  access-expiration: 7200000   # 2hours (ms 단위)
   refresh-expiration: 604800000 # 7일 (ms 단위)

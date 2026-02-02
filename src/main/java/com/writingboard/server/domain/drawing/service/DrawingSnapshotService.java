@@ -36,11 +36,21 @@ public class DrawingSnapshotService {
      */
     @Transactional
     public DrawingSnapshot saveSnapshot(Long memberId, String roomUuid, Long roomAssetId, Integer pageIndex,
-                                       Long lastIncludedVersion, String snapshotData) {
+                                        Long lastIncludedVersion, String snapshotData) {
+
+
+        Optional<DrawingSnapshot> latestSnapshot = getLatestSnapshot(roomAssetId, pageIndex);
+
+        if (latestSnapshot.isPresent() && latestSnapshot.get().getVersion() >= lastIncludedVersion) {
+            log.info("이미 최신 스냅샷이 존재하여 저장을 건너뜁니다. (Current: {}, Incoming: {})",
+                    latestSnapshot.get().getVersion(), lastIncludedVersion);
+            return latestSnapshot.get();
+        }
+
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.MEMBER_NOT_FOUND));
 
-        // 스냅샷 저장
         DrawingSnapshot snapshot = DrawingSnapshot.create(
                 roomUuid, roomAssetId, pageIndex, lastIncludedVersion, snapshotData,
                 member.getId(), member.getName()
@@ -51,7 +61,6 @@ public class DrawingSnapshotService {
         log.info("스냅샷 저장 완료: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
                 roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
 
-        // Redis 버퍼 정리 (LTRIM)
         trimRedisBuffer(roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
 
         return saved;
@@ -66,30 +75,18 @@ public class DrawingSnapshotService {
 
     /**
      * Redis 버퍼 정리 (LTRIM)
-     * lastIncludedVersion까지의 스트로크를 제거
      */
     private void trimRedisBuffer(String roomUuid, Long roomAssetId, Integer pageIndex, Long lastIncludedVersion) {
         String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);
 
         try {
-            // LTRIM: 인덱스 lastIncludedVersion 이후부터 끝까지 유지
-            // 예: version 1-50이 저장됨 → LTRIM key 50 -1 (인덱스 50부터 끝까지 유지)
             drawingRedisTemplate.opsForList().trim(bufferKey, lastIncludedVersion, -1);
-
-            log.info("Redis 버퍼 정리 완료: bufferKey={}, trimmedUpTo={}",
-                    bufferKey, lastIncludedVersion);
-
+            log.info("Redis 버퍼 정리 완료: bufferKey={}, trimmedUpTo={}", bufferKey, lastIncludedVersion);
         } catch (Exception e) {
-            log.error("Redis 버퍼 정리 실패: bufferKey={}, version={}",
-                    bufferKey, lastIncludedVersion, e);
-            // 정리 실패해도 스냅샷은 저장되었으므로 예외를 던지지 않음
+            log.error("Redis 버퍼 정리 실패: bufferKey={}, version={}", bufferKey, lastIncludedVersion, e);
         }
     }
 
-    /**
-     * Redis 버퍼 키 생성
-     * Pattern: drawing:buffer:room:{roomUuid}:asset:{roomAssetId}:page:{pageIndex}
-     */
     private String buildBufferKey(String roomUuid, Long roomAssetId, Integer pageIndex) {
         return BUFFER_KEY_PREFIX + "room:" + roomUuid + ":asset:" + roomAssetId + ":page:" + pageIndex;
     }
