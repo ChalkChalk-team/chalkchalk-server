@@ -26,7 +26,6 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class DrawingService {
 
     private static final String BUFFER_KEY_PREFIX = "drawing:buffer:";
@@ -43,6 +42,7 @@ public class DrawingService {
     /**
      * 드로잉 스트로크 전송
      */
+    @Transactional(readOnly = true)
     public DrawingStrokeDto sendStroke(Long memberId, String roomUuid, DrawingStrokeRequest request) {
         validateStrokeRequest(request);
 
@@ -88,6 +88,7 @@ public class DrawingService {
     /**
      * 특정 RoomAsset 페이지의 스트로크 히스토리 조회
      */
+    @Transactional(readOnly = true)
     public List<DrawingStrokeDto> getStrokeHistory(String roomUuid, Long roomAssetId, Integer pageIndex) {
         String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);
         List<DrawingStrokeDto> strokes = drawingRedisTemplate.opsForList().range(bufferKey, 0, -1);
@@ -101,6 +102,7 @@ public class DrawingService {
     /**
      * 특정 RoomAsset 페이지의 스트로크 버퍼 초기화
      */
+    @Transactional(readOnly = true)
     public void clearStrokes(String roomUuid, Long roomAssetId, Integer pageIndex) {
         String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);
         drawingRedisTemplate.delete(bufferKey);

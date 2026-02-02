@@ -19,7 +19,6 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class DrawingSnapshotService {
 
     private static final String BUFFER_KEY_PREFIX = "drawing:buffer:";
@@ -66,6 +65,7 @@ public class DrawingSnapshotService {
     /**
      * 특정 RoomAsset 페이지의 최신 스냅샷 조회
      */
+    @Transactional(readOnly = true)
     public Optional<DrawingSnapshot> getLatestSnapshot(Long roomAssetId, Integer pageIndex) {
         return snapshotRepository.findFirstByRoomAssetIdAndPageIndexOrderByVersionDesc(roomAssetId, pageIndex);
     }
