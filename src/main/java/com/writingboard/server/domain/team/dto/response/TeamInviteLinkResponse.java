@@ -19,7 +19,7 @@ public class TeamInviteLinkResponse {
         return TeamInviteLinkResponse.builder()
                 .invitationId(invitation.getId())
                 .inviteToken(invitation.getInviteToken())
-                .inviteUrl("/api/teams/join/" + invitation.getInviteToken())
+                .inviteUrl("/api/invitations/link/" + invitation.getInviteToken() + "/accept")
                 .expiresAt(invitation.getExpiresAt())
                 .build();
     }
