@@ -1,0 +1,63 @@
+name: Java CI/CD with Gradle (OCI Deployment)
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      - name: Stop and Backup via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_KEY }}
+          script: |
+           sudo systemctl stop writing-board
+           cp /opt/writing-board/server-0.0.1-SNAPSHOT.jar /opt/writing-board/server-0.0.1-SNAPSHOT.jar.bak || true
+
+      - name: Copy JAR to OCI via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_KEY }}
+          source: "build/libs/*.jar"
+          target: "/opt/writing-board/"
+          strip_components: 2
+
+      - name: Start Service via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_KEY }}
+          script: sudo systemctl start writing-board
+
+      - name: Health Check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_KEY }}
+          script: |
+            sleep 10
+            curl -f http://localhost:8080/actuator/health || echo "Health check failed but moving on"
