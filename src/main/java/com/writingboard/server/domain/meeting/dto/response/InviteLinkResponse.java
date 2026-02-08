@@ -17,7 +17,7 @@ public class InviteLinkResponse {
     public static InviteLinkResponse of(RoomInvite invite) {
         return InviteLinkResponse.builder()
                 .inviteToken(invite.getInviteToken())
-                .inviteUrl("/join/" + invite.getInviteToken())
+                .inviteUrl("join/invite/" + invite.getInviteToken())
                 .expiresAt(invite.getExpiresAt())
                 .build();
     }
