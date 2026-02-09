@@ -234,6 +234,22 @@ public class RoomService {
         room.leave(targetMember);
     }
 
+    /**
+     * 팀 회의실 목록 조회
+     */
+    public Page<RoomSummaryResponse> getTeamRooms(Long memberId, Long teamId, Pageable pageable) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.TEAM_NOT_FOUND));
+
+        boolean isTeamMember = teamMemberRepository.existsByTeamIdAndMemberIdAndStatus(team.getId(), memberId, TeamMemberStatus.ACTIVE);
+        if (!isTeamMember) {
+            throw new MeetingException(MeetingErrorCode.NOT_TEAM_MEMBER);
+        }
+
+        return roomRepository.findByTeamIdAndStatus(teamId, RoomStatus.OPEN, pageable)
+                .map(RoomSummaryResponse::of);
+    }
+
     private Room getRoomByUuid(String roomUuid) {
         return roomRepository.findByRoomUuid(roomUuid)
                 .orElseThrow(() -> new MeetingException(MeetingErrorCode.ROOM_NOT_FOUND));

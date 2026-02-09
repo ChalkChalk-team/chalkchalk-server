@@ -3,6 +3,7 @@ package com.writingboard.server.domain.meeting.controller;
 import com.writingboard.server.domain.meeting.dto.request.RoomCreateRequest;
 import com.writingboard.server.domain.meeting.dto.request.RoomJoinRequest;
 import com.writingboard.server.domain.meeting.dto.response.*;
+import com.writingboard.server.domain.meeting.entity.enums.RoomStatus;
 import com.writingboard.server.domain.meeting.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +77,17 @@ public class RoomController {
             @AuthenticationPrincipal Long memberId,
             Pageable pageable) {
         return ResponseEntity.ok(roomService.getMyHostedRooms(memberId, pageable));
+    }
+
+    /**
+     * 팀 활성 회의실 목록 조회
+     */
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<Page<RoomSummaryResponse>> getTeamRooms(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long teamId,
+            Pageable pageable) {
+        return ResponseEntity.ok(roomService.getTeamRooms(memberId, teamId, pageable));
     }
 
     /**
