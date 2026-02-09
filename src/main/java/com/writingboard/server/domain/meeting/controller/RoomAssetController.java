@@ -49,7 +49,8 @@ public class RoomAssetController {
     public ResponseEntity<List<RoomAssetResponse>> getRoomAssets(
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid) {
-        return ResponseEntity.ok(roomAssetService.getRoomAssets(memberId, roomUuid));
+        List<RoomAssetResponse> roomAssets = roomAssetService.getRoomAssets(memberId, roomUuid);
+        return ResponseEntity.ok(roomAssets);
     }
 
     @PostMapping("/{roomAssetId}/activate")
@@ -58,7 +59,8 @@ public class RoomAssetController {
             @AuthenticationPrincipal Long memberId,
             @PathVariable String roomUuid,
             @PathVariable Long roomAssetId) {
-        return ResponseEntity.ok(roomAssetService.activateAsset(memberId, roomUuid, roomAssetId));
+        RoomAssetResponse roomAssetResponse = roomAssetService.activateAsset(memberId, roomUuid, roomAssetId);
+        return ResponseEntity.ok(roomAssetResponse);
     }
 
     @PostMapping("/{roomAssetId}/page")
@@ -68,6 +70,7 @@ public class RoomAssetController {
             @PathVariable String roomUuid,
             @PathVariable Long roomAssetId,
             @RequestBody @Valid PageChangeRequest request) {
-        return ResponseEntity.ok(roomAssetService.changePage(memberId, roomUuid, roomAssetId, request));
+        RoomAssetResponse roomAssetResponse = roomAssetService.changePage(memberId, roomUuid, roomAssetId, request);
+        return ResponseEntity.ok(roomAssetResponse);
     }
 }

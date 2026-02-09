@@ -22,4 +22,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findByHostId(Long hostId, Pageable pageable);
 
     boolean existsByRoomUuid(String roomUuid);
+
+    @Query("SELECT r FROM Room r JOIN FETCH r.host WHERE r.team.id = :teamId AND r.status = :status")
+    Page<Room> findByTeamIdAndStatus(@Param("teamId") Long teamId,
+                                      @Param("status") RoomStatus status,
+                                      Pageable pageable);
+
 }
