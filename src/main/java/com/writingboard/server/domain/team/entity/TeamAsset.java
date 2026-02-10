@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "team_asset")
 @Getter
@@ -66,6 +68,9 @@ public class TeamAsset extends BaseEntity {
     @Column(name = "status", length = 20, nullable = false)
     private AssetStatus status;
 
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     public static TeamAsset create(Team team, Member uploader, AssetType type, String name,
                                     AssetSourceType sourceType, String storageKey, Integer totalPages) {
         TeamAsset asset = new TeamAsset();
@@ -118,10 +123,19 @@ public class TeamAsset extends BaseEntity {
 
     public void delete() {
         this.status = AssetStatus.DELETED;
+        this.deletedAt = Instant.now();
     }
 
     public boolean isDeleted() {
         return this.status == AssetStatus.DELETED;
+    }
+
+    public void updateStorageKey(String storageKey) {
+        this.storageKey = storageKey;
+    }
+
+    public void clearStorageKey() {
+        this.storageKey = null;
     }
 
     public boolean isUploader(Long memberId) {

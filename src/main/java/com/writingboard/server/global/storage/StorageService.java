@@ -28,8 +28,8 @@ public class StorageService {
     private final S3Presigner s3Presigner;
     private final R2Properties r2Properties;
 
-    public PresignedUploadResponse generateUploadUrl(String folder, String fileName, String contentType) {
-        String storageKey = folder + "/" + UUID.randomUUID() + "_" + fileName;
+    public PresignedUploadResponse generateUploadUrl(Long teamId, String fileName, String contentType) {
+        String storageKey = "teams/" + teamId + "/" + UUID.randomUUID() + "_" + fileName;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(r2Properties.getBucket())

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +25,8 @@ public interface TeamAssetRepository extends JpaRepository<TeamAsset, Long> {
 
     @Query("SELECT a FROM TeamAsset a WHERE a.id = :assetId OR a.parentAsset.id = :assetId ORDER BY a.version DESC")
     List<TeamAsset> findAllVersions(@Param("assetId") Long assetId);
+
+    List<TeamAsset> findByTeamIdAndStatus(Long teamId, AssetStatus status);
+
+    List<TeamAsset> findByStatusAndDeletedAtBeforeAndStorageKeyIsNotNull(AssetStatus status, Instant before);
 }

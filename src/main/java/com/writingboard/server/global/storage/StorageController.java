@@ -1,5 +1,9 @@
 package com.writingboard.server.global.storage;
 
+import com.writingboard.server.domain.team.entity.enums.TeamMemberStatus;
+import com.writingboard.server.domain.team.exception.TeamErrorCode;
+import com.writingboard.server.domain.team.exception.TeamException;
+import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.global.storage.dto.PresignedDownloadRequest;
 import com.writingboard.server.global.storage.dto.PresignedDownloadResponse;
 import com.writingboard.server.global.storage.dto.PresignedUploadRequest;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StorageController {
 
     private final StorageService storageService;
+    private final TeamMemberRepository teamMemberRepository;
 
     @PostMapping("/presigned-url/upload")
     @Operation(summary = "업로드 Presigned URL 발급", description = "R2에 파일을 업로드하기 위한 Presigned URL을 발급한다.")
@@ -29,9 +34,11 @@ public class StorageController {
             @AuthenticationPrincipal Long memberId,
             @RequestBody @Valid PresignedUploadRequest request) {
 
-        log.info("Member {} requested upload presigned URL for folder: {}, fileName: {}", memberId, request.folder(), request.fileName());
+        validateTeamMember(request.teamId(), memberId);
+
+//        log.info("Member {} requested upload presigned URL for team: {}, fileName: {}", memberId, request.teamId(), request.fileName());
         PresignedUploadResponse response = storageService.generateUploadUrl(
-                request.folder(), request.fileName(), request.contentType());
+                request.teamId(), request.fileName(), request.contentType());
         return ResponseEntity.ok(response);
     }
 
@@ -43,5 +50,13 @@ public class StorageController {
 
         PresignedDownloadResponse response = storageService.generateDownloadUrl(request.storageKey());
         return ResponseEntity.ok(response);
+    }
+
+    private void validateTeamMember(Long teamId, Long memberId) {
+        boolean isMember = teamMemberRepository.existsByTeamIdAndMemberIdAndStatus(
+                teamId, memberId, TeamMemberStatus.ACTIVE);
+        if (!isMember) {
+            throw new TeamException(TeamErrorCode.NOT_TEAM_MEMBER);
+        }
     }
 }

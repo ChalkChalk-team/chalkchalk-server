@@ -67,6 +67,10 @@ public class PersonalAsset extends BaseEntity {
         return this.member.getId().equals(memberId);
     }
 
+    public void clearStorageKey() {
+        this.storageKey = null;
+    }
+
     public void updateName(String name) {
         if (name != null && !name.isBlank()) {
             this.name = name;
