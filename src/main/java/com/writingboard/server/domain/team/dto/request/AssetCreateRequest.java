@@ -17,6 +17,12 @@ public class AssetCreateRequest {
     @Size(max = 255, message = "파일 이름은 255자 이내여야 합니다")
     private String name;
 
+    @NotBlank(message = "스토리지 키는 필수입니다")
+    @Size(max = 500, message = "스토리지 키는 500자 이내여야 합니다")
+    private String storageKey;
+
+    private Integer totalPages;
+
     private AssetSourceType sourceType = AssetSourceType.UPLOADED;
 
     private Long originPersonalAssetId;

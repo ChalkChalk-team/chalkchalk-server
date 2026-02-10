@@ -66,26 +66,30 @@ public class TeamAsset extends BaseEntity {
     @Column(name = "status", length = 20, nullable = false)
     private AssetStatus status;
 
-    public static TeamAsset create(Team team, Member uploader, AssetType type, String name, AssetSourceType sourceType) {
+    public static TeamAsset create(Team team, Member uploader, AssetType type, String name,
+                                    AssetSourceType sourceType, String storageKey, Integer totalPages) {
         TeamAsset asset = new TeamAsset();
         asset.team = team;
         asset.uploader = uploader;
         asset.type = type;
         asset.name = name;
         asset.sourceType = sourceType;
+        asset.storageKey = storageKey;
+        asset.totalPages = totalPages;
         asset.version = 1;
         asset.isLatest = true;
         asset.status = AssetStatus.ACTIVE;
         return asset;
     }
 
-    public static TeamAsset createImported(Team team, Member uploader, AssetType type, String name, Long originPersonalAssetId) {
-        TeamAsset asset = create(team, uploader, type, name, AssetSourceType.IMPORTED);
+    public static TeamAsset createImported(Team team, Member uploader, AssetType type, String name,
+                                           Long originPersonalAssetId, String storageKey, Integer totalPages) {
+        TeamAsset asset = create(team, uploader, type, name, AssetSourceType.IMPORTED, storageKey, totalPages);
         asset.originPersonalAssetId = originPersonalAssetId;
         return asset;
     }
 
-    public TeamAsset createNewVersion(Member uploader) {
+    public TeamAsset createNewVersion(Member uploader, String storageKey) {
         TeamAsset newVersion = new TeamAsset();
         newVersion.team = this.team;
         newVersion.uploader = uploader;
@@ -94,6 +98,8 @@ public class TeamAsset extends BaseEntity {
         newVersion.sourceType = this.sourceType;
         newVersion.type = this.type;
         newVersion.name = this.name;
+        newVersion.storageKey = storageKey;
+        newVersion.totalPages = this.totalPages;
         newVersion.version = this.version + 1;
         newVersion.isLatest = true;
         newVersion.status = AssetStatus.ACTIVE;

@@ -77,7 +77,9 @@ public class RoomAssetService {
                 member,
                 personalAsset.getType(),
                 personalAsset.getName(),
-                personalAsset.getId()
+                personalAsset.getId(),
+                request.getStorageKey(),
+                personalAsset.getTotalPages()
         );
         teamAssetRepository.save(teamAsset);
 
