@@ -73,6 +73,10 @@ public class RoomAsset extends BaseEntity {
         }
     }
 
+    public void updateTeamAsset(TeamAsset newTeamAsset) {
+        this.teamAsset = newTeamAsset;
+    }
+
     public boolean isAddedBy(Long memberId) {
         return this.addedBy.getId().equals(memberId);
     }

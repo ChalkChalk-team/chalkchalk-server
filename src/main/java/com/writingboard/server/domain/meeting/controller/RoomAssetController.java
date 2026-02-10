@@ -1,5 +1,6 @@
 package com.writingboard.server.domain.meeting.controller;
 
+import com.writingboard.server.domain.meeting.dto.request.AssetSaveRequest;
 import com.writingboard.server.domain.meeting.dto.request.LoadPersonalAssetRequest;
 import com.writingboard.server.domain.meeting.dto.request.LoadTeamAssetRequest;
 import com.writingboard.server.domain.meeting.dto.request.PageChangeRequest;
@@ -61,6 +62,17 @@ public class RoomAssetController {
             @PathVariable Long roomAssetId) {
         RoomAssetResponse roomAssetResponse = roomAssetService.activateAsset(memberId, roomUuid, roomAssetId);
         return ResponseEntity.ok(roomAssetResponse);
+    }
+
+    @PostMapping("/{roomAssetId}/save")
+    @Operation(summary = "자료 저장", description = "회의실에서 수정한 자료를 저장합니다 (OVERWRITE: 원본 덮어쓰기, NEW_COPY: 새 버전 생성)")
+    public ResponseEntity<RoomAssetResponse> saveAsset(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable String roomUuid,
+            @PathVariable Long roomAssetId,
+            @RequestBody @Valid AssetSaveRequest request) {
+        RoomAssetResponse response = roomAssetService.saveAsset(memberId, roomUuid, roomAssetId, request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{roomAssetId}/page")

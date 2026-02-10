@@ -1,5 +1,6 @@
 package com.writingboard.server.domain.meeting.service;
 
+import com.writingboard.server.domain.meeting.dto.request.AssetSaveRequest;
 import com.writingboard.server.domain.meeting.dto.request.LoadPersonalAssetRequest;
 import com.writingboard.server.domain.meeting.dto.request.LoadTeamAssetRequest;
 import com.writingboard.server.domain.meeting.dto.request.PageChangeRequest;
@@ -24,12 +25,15 @@ import com.writingboard.server.domain.team.entity.TeamAsset;
 import com.writingboard.server.domain.team.entity.enums.AssetSourceType;
 import com.writingboard.server.domain.team.entity.enums.AssetStatus;
 import com.writingboard.server.domain.team.repository.TeamAssetRepository;
+import com.writingboard.server.global.storage.StorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -41,6 +45,7 @@ public class RoomAssetService {
     private final TeamAssetRepository teamAssetRepository;
     private final MemberRepository memberRepository;
     private final PersonalAssetService personalAssetService;
+    private final StorageService storageService;
 
     @Transactional
     public RoomAssetResponse loadTeamAsset(Long memberId, String roomUuid, LoadTeamAssetRequest request) {
@@ -77,7 +82,9 @@ public class RoomAssetService {
                 member,
                 personalAsset.getType(),
                 personalAsset.getName(),
-                personalAsset.getId()
+                personalAsset.getId(),
+                request.getStorageKey(),
+                personalAsset.getTotalPages()
         );
         teamAssetRepository.save(teamAsset);
 
@@ -120,6 +127,45 @@ public class RoomAssetService {
                 .orElseThrow(() -> new MeetingException(MeetingErrorCode.ASSET_NOT_FOUND));
 
         roomAsset.changePage(request.getPageNumber());
+        return RoomAssetResponse.from(roomAsset);
+    }
+
+    @Transactional
+    public RoomAssetResponse saveAsset(Long memberId, String roomUuid, Long roomAssetId, AssetSaveRequest request) {
+        Room room = getRoomByUuid(roomUuid);
+        RoomParticipant participant = validateParticipantWithWritePermission(room, memberId);
+        Member member = participant.getMember();
+
+        RoomAsset roomAsset = roomAssetRepository.findByIdAndRoomUuid(roomAssetId, roomUuid)
+                .orElseThrow(() -> new MeetingException(MeetingErrorCode.ASSET_NOT_FOUND));
+
+        TeamAsset teamAsset = roomAsset.getTeamAsset();
+        if (teamAsset == null || teamAsset.isDeleted()) {
+            throw new MeetingException(MeetingErrorCode.ASSET_NOT_FOUND);
+        }
+
+        String newStorageKey = request.getStorageKey();
+
+        switch (roomAsset.getSavePolicy()) {
+            case OVERWRITE -> {
+                String oldStorageKey = teamAsset.getStorageKey();
+                teamAsset.updateStorageKey(newStorageKey);
+                if (oldStorageKey != null) {
+                    try {
+                        storageService.deleteObject(oldStorageKey);
+                    } catch (Exception e) {
+                        log.warn("Failed to delete old R2 object: {}", oldStorageKey, e);
+                    }
+                }
+            }
+            case NEW_COPY -> {
+                teamAsset.markAsNotLatest();
+                TeamAsset newVersion = teamAsset.createNewVersion(member, newStorageKey);
+                teamAssetRepository.save(newVersion);
+                roomAsset.updateTeamAsset(newVersion);
+            }
+        }
+
         return RoomAssetResponse.from(roomAsset);
     }
 

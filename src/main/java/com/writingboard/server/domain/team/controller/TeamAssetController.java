@@ -1,6 +1,7 @@
 package com.writingboard.server.domain.team.controller;
 
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
+import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.AssetListResponse;
 import com.writingboard.server.domain.team.dto.response.AssetResponse;
@@ -97,9 +98,10 @@ public class TeamAssetController {
     public ResponseEntity<AssetResponse> createNewVersion(
             @AuthenticationPrincipal Long memberId,
             @PathVariable Long teamId,
-            @PathVariable Long assetId) {
+            @PathVariable Long assetId,
+            @RequestBody @Valid AssetNewVersionRequest request) {
 
-        AssetResponse response = teamAssetService.createNewVersion(memberId, teamId, assetId);
+        AssetResponse response = teamAssetService.createNewVersion(memberId, teamId, assetId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

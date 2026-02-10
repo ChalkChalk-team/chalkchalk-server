@@ -7,11 +7,14 @@ import com.writingboard.server.domain.team.dto.request.TeamUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.TeamResponse;
 import com.writingboard.server.domain.team.dto.response.TeamSummaryResponse;
 import com.writingboard.server.domain.team.entity.Team;
+import com.writingboard.server.domain.team.entity.TeamAsset;
 import com.writingboard.server.domain.team.entity.TeamMember;
+import com.writingboard.server.domain.team.entity.enums.AssetStatus;
 import com.writingboard.server.domain.team.entity.enums.TeamMemberStatus;
 import com.writingboard.server.domain.team.entity.enums.TeamRole;
 import com.writingboard.server.domain.team.exception.TeamErrorCode;
 import com.writingboard.server.domain.team.exception.TeamException;
+import com.writingboard.server.domain.team.repository.TeamAssetRepository;
 import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.domain.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final TeamAssetRepository teamAssetRepository;
     private final MemberRepository memberRepository;
 
     @Transactional
@@ -108,6 +112,10 @@ public class TeamService {
     public void deleteTeam(Long memberId, Long teamId) {
         Team team = getTeamById(teamId);
         validateOwner(teamId, memberId);
+
+        // 모든 팀 자산 soft delete
+        List<TeamAsset> assets = teamAssetRepository.findByTeamIdAndStatus(teamId, AssetStatus.ACTIVE);
+        assets.forEach(TeamAsset::delete);
 
         // 모든 팀 멤버 상태를 LEFT로 변경
         List<TeamMember> members = teamMemberRepository.findByTeamIdAndStatus(teamId, TeamMemberStatus.ACTIVE);

@@ -3,6 +3,7 @@ package com.writingboard.server.domain.team.service;
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
+import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.AssetListResponse;
 import com.writingboard.server.domain.team.dto.response.AssetResponse;
@@ -43,9 +44,11 @@ public class TeamAssetService {
 
         TeamAsset asset;
         if (request.getSourceType() == AssetSourceType.IMPORTED && request.getOriginPersonalAssetId() != null) {
-            asset = TeamAsset.createImported(team, uploader, request.getType(), request.getName(), request.getOriginPersonalAssetId());
+            asset = TeamAsset.createImported(team, uploader, request.getType(), request.getName(),
+                    request.getOriginPersonalAssetId(), request.getStorageKey(), request.getTotalPages());
         } else {
-            asset = TeamAsset.create(team, uploader, request.getType(), request.getName(), AssetSourceType.UPLOADED);
+            asset = TeamAsset.create(team, uploader, request.getType(), request.getName(),
+                    AssetSourceType.UPLOADED, request.getStorageKey(), request.getTotalPages());
         }
 
         teamAssetRepository.save(asset);
@@ -108,7 +111,7 @@ public class TeamAssetService {
     }
 
     @Transactional
-    public AssetResponse createNewVersion(Long memberId, Long teamId, Long assetId) {
+    public AssetResponse createNewVersion(Long memberId, Long teamId, Long assetId, AssetNewVersionRequest request) {
         validateTeamMember(teamId, memberId);
 
         TeamAsset existingAsset = getActiveAssetByTeam(assetId, teamId);
@@ -116,7 +119,7 @@ public class TeamAssetService {
 
         existingAsset.markAsNotLatest();
 
-        TeamAsset newVersion = existingAsset.createNewVersion(uploader);
+        TeamAsset newVersion = existingAsset.createNewVersion(uploader, request.getStorageKey());
         teamAssetRepository.save(newVersion);
 
         return AssetResponse.of(newVersion);

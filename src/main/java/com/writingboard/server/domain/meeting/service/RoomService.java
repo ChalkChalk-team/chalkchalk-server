@@ -69,7 +69,6 @@ public class RoomService {
         room.join(host, ParticipantRole.HOST);
 
         roomRepository.save(room);
-
         return RoomCreateResponse.of(room);
     }
 
@@ -92,6 +91,7 @@ public class RoomService {
         Room room = getRoomByUuid(roomUuid);
         List<RoomParticipant> activeParticipants =
                 participantRepository.findByRoomIdAndState(room.getId(), ParticipantState.JOINED);
+
         return RoomDetailResponse.of(room, activeParticipants);
     }
 
