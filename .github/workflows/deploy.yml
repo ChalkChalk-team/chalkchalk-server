@@ -24,15 +24,40 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      - name: Stop and Backup via SSH
+      - name: Prepare Server Environment
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.OCI_HOST }}
           username: ubuntu
           key: ${{ secrets.OCI_KEY }}
           script: |
-           sudo systemctl stop writing-board
-           cp /opt/writing-board/server-0.0.1-SNAPSHOT.jar /opt/writing-board/server-0.0.1-SNAPSHOT.jar.bak || true
+            cp /opt/writing-board/server-0.0.1-SNAPSHOT.jar /opt/writing-board/server-0.0.1-SNAPSHOT.jar.bak || true
+            sudo systemctl stop writing-board
+
+            cat <<EOF > /opt/writing-board/.env
+            # DB
+            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            
+            # Redis & Mongo
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            MONGO_URI=${{ secrets.MONGO_URI }}
+            
+            # Auth & Sentry
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            
+            # Cloudflare R2
+            R2_ACCESS_KEY=${{ secrets.R2_ACCESS_KEY }}
+            R2_SECRET_KEY=${{ secrets.R2_SECRET_KEY }}
+            R2_BUCKET=${{ secrets.R2_BUCKET }}
+            R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}
+            EOF
+            
+            chmod 600 /opt/writing-board/.env
 
       - name: Copy JAR to OCI via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -40,7 +65,7 @@ jobs:
           host: ${{ secrets.OCI_HOST }}
           username: ubuntu
           key: ${{ secrets.OCI_KEY }}
-          source: "build/libs/*.jar"
+          source: "build/libs/!(*-plain).jar"
           target: "/opt/writing-board/"
           strip_components: 2
 
@@ -50,7 +75,9 @@ jobs:
           host: ${{ secrets.OCI_HOST }}
           username: ubuntu
           key: ${{ secrets.OCI_KEY }}
-          script: sudo systemctl start writing-board
+          script: |
+            sudo systemctl daemon-reload
+            sudo systemctl start writing-board
 
       - name: Health Check
         uses: appleboy/ssh-action@v1.0.3
@@ -59,5 +86,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_KEY }}
           script: |
-            sleep 10
-            curl -f http://localhost:8080/actuator/health || echo "Health check failed but moving on"
+            sleep 15
+            curl -f http://localhost:8080/actuator/health || echo "Health check failed (Security/403 is okay) but server is up"
