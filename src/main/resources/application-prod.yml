@@ -40,3 +40,13 @@ sentry:
   traces-sample-rate: 1.0
   send-default-pii: true
   exception-resolver-order: -2147483648
+
+
+cloud:
+  r2:
+    credentials:
+      access-key: ${R2_ACCESS_KEY}
+      secret-key: ${R2_SECRET_KEY}
+    endpoint: ${R2_ENDPOINT}
+    bucket: ${R2_BUCKET}
+    region: "auto"
