@@ -65,7 +65,7 @@ jobs:
           host: ${{ secrets.OCI_HOST }}
           username: ubuntu
           key: ${{ secrets.OCI_KEY }}
-          source: "build/libs/!(*-plain).jar"
+          source: "build/libs/*.jar"
           target: "/opt/writing-board/"
           strip_components: 2
 
