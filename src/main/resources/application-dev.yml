@@ -33,3 +33,12 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 7200000   # 2hours (ms 단위)
   refresh-expiration: 604800000 # 7일 (ms 단위)
+
+cloud:
+  r2:
+    credentials:
+      access-key: "3458beceefc473d77403057a9b2e2aea"
+      secret-key: "0cacd5df8f92a7dd347ff9609c440961c82086ea157c44029482042f44f4c920"
+    endpoint: "https://524c46e0afa2f741cf42269fdc20d736.r2.cloudflarestorage.com"
+    bucket: "chalkchalk"
+    region: "auto"
