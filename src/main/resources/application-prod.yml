@@ -34,3 +34,9 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: 7200000
   refresh-expiration: 604800000
+
+sentry:
+  dsn: ${SENTRY_DSN}
+  traces-sample-rate: 1.0
+  send-default-pii: true
+  exception-resolver-order: -2147483648
