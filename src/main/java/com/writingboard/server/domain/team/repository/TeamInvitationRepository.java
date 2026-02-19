@@ -20,4 +20,6 @@ public interface TeamInvitationRepository extends JpaRepository<TeamInvitation, 
     boolean existsByTeamIdAndInviteeIdAndStatus(Long teamId, Long inviteeId, TeamInvitationStatus status);
 
     boolean existsByInviteToken(String inviteToken);
+
+    void deleteAllByTeamId(Long teamId);
 }

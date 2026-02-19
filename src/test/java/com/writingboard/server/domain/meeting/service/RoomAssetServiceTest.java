@@ -68,20 +68,20 @@ class RoomAssetServiceTest {
     @BeforeEach
     void setUp() {
         member = mock(Member.class);
-        given(member.getId()).willReturn(MEMBER_ID);
-        given(member.getName()).willReturn("테스터");
+        lenient().when(member.getId()).thenReturn(MEMBER_ID);
+        lenient().when(member.getName()).thenReturn("테스터");
 
         team = mock(Team.class);
-        given(team.getId()).willReturn(1L);
+        lenient().when(team.getId()).thenReturn(1L);
 
         room = mock(Room.class);
-        given(room.getId()).willReturn(1L);
-        given(room.getTeam()).willReturn(team);
+        lenient().when(room.getId()).thenReturn(1L);
+        lenient().when(room.getTeam()).thenReturn(team);
 
         participant = mock(RoomParticipant.class);
-        given(participant.getMember()).willReturn(member);
-        given(participant.getState()).willReturn(ParticipantState.JOINED);
-        given(participant.getRole()).willReturn(ParticipantRole.EDITOR);
+        lenient().when(participant.getMember()).thenReturn(member);
+        lenient().when(participant.getState()).thenReturn(ParticipantState.JOINED);
+        lenient().when(participant.getRole()).thenReturn(ParticipantRole.PARTICIPANT);
 
         teamAsset = TeamAsset.create(team, member, AssetType.PDF, "test.pdf",
                 AssetSourceType.UPLOADED, OLD_STORAGE_KEY, 5);
