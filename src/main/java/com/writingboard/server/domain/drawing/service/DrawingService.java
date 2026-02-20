@@ -16,10 +16,12 @@ import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 
 
@@ -38,6 +40,8 @@ public class DrawingService {
     private final MemberRepository memberRepository;
     private final DrawingRedisPublisher drawingRedisPublisher;
     private final RedisTemplate<String, DrawingStrokeDto> drawingRedisTemplate;
+    @Value("${drawing.redis.ttl-minutes:180}")
+    private long drawingRedisTtlMinutes;
 
     /**
      * 드로잉 스트로크 전송
@@ -168,6 +172,7 @@ public class DrawingService {
             if (version == null) {
                 throw new DrawingException(DrawingErrorCode.REDIS_OPERATION_FAILED);
             }
+            touchTtl(versionKey);
 
             log.debug("버전 할당: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
                     roomUuid, roomAssetId, pageIndex, version);
@@ -187,10 +192,22 @@ public class DrawingService {
         try {
             String bufferKey = buildBufferKey(roomUuid, roomAssetId, pageIndex);
             drawingRedisTemplate.opsForList().rightPush(bufferKey, strokeDto);
+            touchTtl(bufferKey);
         } catch (Exception e) {
             log.error("Redis 버퍼링 실패: roomUuid={}, roomAssetId={}, pageIndex={}",
                     roomUuid, roomAssetId, pageIndex, e);
             throw new DrawingException(DrawingErrorCode.REDIS_OPERATION_FAILED);
+        }
+    }
+
+    private void touchTtl(String key) {
+        try {
+            Boolean expireSet = drawingRedisTemplate.expire(key, Duration.ofMinutes(drawingRedisTtlMinutes));
+            if (Boolean.FALSE.equals(expireSet)) {
+                log.warn("Drawing 키 TTL 설정 실패: key={}, ttlMinutes={}", key, drawingRedisTtlMinutes);
+            }
+        } catch (Exception e) {
+            log.warn("Drawing 키 TTL 설정 중 예외: key={}, ttlMinutes={}", key, drawingRedisTtlMinutes, e);
         }
     }
 
