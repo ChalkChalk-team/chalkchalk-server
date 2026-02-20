@@ -2,6 +2,7 @@ package com.writingboard.server.domain.team.service;
 
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
+import com.writingboard.server.domain.team.dto.TeamAssetPreviewImageUpdateResponse;
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
 import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
@@ -18,12 +19,15 @@ import com.writingboard.server.domain.team.exception.TeamException;
 import com.writingboard.server.domain.team.repository.TeamAssetRepository;
 import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.domain.team.repository.TeamRepository;
+import com.writingboard.server.global.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -35,6 +39,7 @@ public class TeamAssetService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final MemberRepository memberRepository;
+    private final StorageService storageService;
 
     @Transactional
     public AssetResponse createAsset(Long memberId, Long teamId, AssetCreateRequest request) {
@@ -52,7 +57,7 @@ public class TeamAssetService {
         }
 
         teamAssetRepository.save(asset);
-        return AssetResponse.of(asset);
+        return buildAssetResponse(asset);
     }
 
     public AssetListResponse getAssets(Long memberId, Long teamId, Pageable pageable) {
@@ -61,7 +66,7 @@ public class TeamAssetService {
         Page<TeamAsset> assetPage = teamAssetRepository.findByTeamIdAndStatusAndIsLatestTrue(
                 teamId, AssetStatus.ACTIVE, pageable);
 
-        Page<AssetResponse> responsePage = assetPage.map(AssetResponse::of);
+        Page<AssetResponse> responsePage = assetPage.map(this::buildAssetResponse);
         return AssetListResponse.of(responsePage);
     }
 
@@ -69,7 +74,7 @@ public class TeamAssetService {
         validateTeamMember(teamId, memberId);
 
         TeamAsset asset = getActiveAssetByTeam(assetId, teamId);
-        return AssetResponse.of(asset);
+        return buildAssetResponse(asset);
     }
 
     public List<AssetResponse> getVersionHistory(Long memberId, Long teamId, Long assetId) {
@@ -81,7 +86,7 @@ public class TeamAssetService {
         List<TeamAsset> versions = teamAssetRepository.findVersionHistory(rootAssetId, AssetStatus.ACTIVE);
 
         return versions.stream()
-                .map(AssetResponse::of)
+                .map(this::buildAssetResponse)
                 .toList();
     }
 
@@ -93,7 +98,7 @@ public class TeamAssetService {
         validateModifyPermission(teamId, memberId, asset);
 
         asset.updateName(request.getName());
-        return AssetResponse.of(asset);
+        return buildAssetResponse(asset);
     }
 
     @Transactional
@@ -122,10 +127,37 @@ public class TeamAssetService {
         TeamAsset newVersion = existingAsset.createNewVersion(uploader, request.getStorageKey());
         teamAssetRepository.save(newVersion);
 
-        return AssetResponse.of(newVersion);
+        return buildAssetResponse(newVersion);
+    }
+
+    public TeamAssetPreviewImageUpdateResponse updatePreviewImage(Long memberId, Long teamId, Long assetId, MultipartFile file) {
+        validateTeamMember(teamId, memberId);
+
+        if (!teamAssetRepository.existsByIdAndTeamIdAndStatus(assetId, teamId, AssetStatus.ACTIVE)) {
+            throw new TeamException(TeamErrorCode.ASSET_NOT_FOUND);
+        }
+
+        // teamId + assetId로 항상 동일 키 조합 → DB 저장 불필요
+        String previewStorageKey = "previews/teams/" + teamId + "/assets/" + assetId + ".jpg";
+
+        try {
+            storageService.uploadObject(previewStorageKey, file.getInputStream(), file.getSize(), file.getContentType());
+        } catch (IOException e) {
+            throw new TeamException(TeamErrorCode.PREVIEW_UPLOAD_FAILED);
+        }
+
+        String previewUrl = storageService.generateDownloadUrl(previewStorageKey).downloadUrl();
+        return TeamAssetPreviewImageUpdateResponse.of(assetId, previewUrl);
     }
 
     // Helper methods
+    private AssetResponse buildAssetResponse(TeamAsset asset) {
+        AssetResponse response = AssetResponse.of(asset);
+        String previewKey = "previews/teams/" + asset.getTeam().getId() + "/assets/" + asset.getId() + ".jpg";
+        response.setThumbnailImageUrl(storageService.generateDownloadUrl(previewKey).downloadUrl());
+        return response;
+    }
+
     private Team getTeamById(Long teamId) {
         return teamRepository.findById(teamId)
                 .orElseThrow(() -> new TeamException(TeamErrorCode.TEAM_NOT_FOUND));

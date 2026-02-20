@@ -18,6 +18,8 @@ public interface TeamAssetRepository extends JpaRepository<TeamAsset, Long> {
 
     Optional<TeamAsset> findByIdAndTeamIdAndStatus(Long id, Long teamId, AssetStatus status);
 
+    boolean existsByIdAndTeamIdAndStatus(Long id, Long teamId, AssetStatus status);
+
     Page<TeamAsset> findByTeamIdAndStatusAndIsLatestTrue(Long teamId, AssetStatus status, Pageable pageable);
 
     @Query("SELECT a FROM TeamAsset a WHERE (a.parentAsset.id = :rootAssetId OR a.id = :rootAssetId) AND a.status = :status ORDER BY a.version DESC")

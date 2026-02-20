@@ -41,7 +41,6 @@ public class AssetResponse {
                 .parentAssetId(asset.getParentAsset() != null ? asset.getParentAsset().getId() : null)
                 .storageKey(asset.getStorageKey())
                 .totalPages(asset.getTotalPages())
-                .thumbnailImageUrl(asset.getThumbnailImageUrl())
                 .uploader(UploaderInfo.of(asset))
                 .createdAt(asset.getCreatedAt())
                 .updatedAt(asset.getUpdatedAt())
