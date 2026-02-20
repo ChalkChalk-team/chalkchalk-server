@@ -125,6 +125,8 @@ public class TeamAssetService {
         return AssetResponse.of(newVersion);
     }
 
+    @
+
     // Helper methods
     private Team getTeamById(Long teamId) {
         return teamRepository.findById(teamId)
