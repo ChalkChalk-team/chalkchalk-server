@@ -31,4 +31,6 @@ public interface RoomAssetRepository extends JpaRepository<RoomAsset, Long> {
 
     @Query("SELECT ra FROM RoomAsset ra WHERE ra.room.roomUuid = :roomUuid AND ra.isActive = true")
     Optional<RoomAsset> findActiveByRoomUuid(@Param("roomUuid") String roomUuid);
+
+    Optional<RoomAsset> findFirstByTeamAssetIdOrderByCreatedAtDesc(Long teamAssetId);
 }
