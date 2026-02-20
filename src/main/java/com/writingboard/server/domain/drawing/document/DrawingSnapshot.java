@@ -12,6 +12,7 @@ import java.time.Instant;
 
 
 @Document(collection = "drawing_snapshots")
+@CompoundIndex(name = "uk_asset_page_single_snapshot", def = "{'roomAssetId': 1, 'pageIndex': 1}", unique = true)
 @CompoundIndex(name = "idx_asset_page_version", def = "{'roomAssetId': 1, 'pageIndex': 1, 'version': -1}")
 @CompoundIndex(name = "idx_room_page_version", def = "{'roomUuid': 1, 'pageIndex': 1, 'version': -1}")
 @Getter

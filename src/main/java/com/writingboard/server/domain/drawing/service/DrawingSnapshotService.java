@@ -9,10 +9,17 @@ import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
 
 
@@ -26,6 +33,7 @@ public class DrawingSnapshotService {
     private final DrawingSnapshotRepository snapshotRepository;
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, DrawingStrokeDto> drawingRedisTemplate;
+    private final MongoTemplate mongoTemplate;
 
     /**
      * 스냅샷 저장 및 Redis 버퍼 정리
@@ -33,8 +41,6 @@ public class DrawingSnapshotService {
     @Transactional
     public DrawingSnapshot saveSnapshot(Long memberId, String roomUuid, Long roomAssetId, Integer pageIndex,
                                         Long lastIncludedVersion, String snapshotData) {
-
-
         Optional<DrawingSnapshot> latestSnapshot = getLatestSnapshot(roomAssetId, pageIndex);
 
         if (latestSnapshot.isPresent() && latestSnapshot.get().getVersion() >= lastIncludedVersion) {
@@ -43,21 +49,26 @@ public class DrawingSnapshotService {
             return latestSnapshot.get();
         }
 
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DrawingException(DrawingErrorCode.MEMBER_NOT_FOUND));
 
-        DrawingSnapshot snapshot = DrawingSnapshot.create(
-                roomUuid, roomAssetId, pageIndex, lastIncludedVersion, snapshotData,
-                member.getId(), member.getName()
+        DrawingSnapshot saved = upsertLatestSnapshot(
+                roomUuid,
+                roomAssetId,
+                pageIndex,
+                lastIncludedVersion,
+                snapshotData,
+                member
         );
 
-        DrawingSnapshot saved = snapshotRepository.save(snapshot);
+        if (saved.getVersion() < lastIncludedVersion) {
+            throw new DrawingException(DrawingErrorCode.SNAPSHOT_SAVE_FAILED);
+        }
 
         log.info("스냅샷 저장 완료: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
-                roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
+                roomUuid, roomAssetId, pageIndex, saved.getVersion());
 
-        trimRedisBuffer(roomUuid, roomAssetId, pageIndex, lastIncludedVersion);
+        trimRedisBuffer(roomUuid, roomAssetId, pageIndex, saved.getVersion());
 
         return saved;
     }
@@ -86,5 +97,51 @@ public class DrawingSnapshotService {
 
     private String buildBufferKey(String roomUuid, Long roomAssetId, Integer pageIndex) {
         return BUFFER_KEY_PREFIX + "room:" + roomUuid + ":asset:" + roomAssetId + ":page:" + pageIndex;
+    }
+
+    private DrawingSnapshot upsertLatestSnapshot(String roomUuid, Long roomAssetId, Integer pageIndex,
+                                                 Long lastIncludedVersion, String snapshotData, Member member) {
+        Query query = Query.query(new Criteria().andOperator(
+                Criteria.where("roomAssetId").is(roomAssetId),
+                Criteria.where("pageIndex").is(pageIndex),
+                new Criteria().orOperator(
+                        Criteria.where("version").lt(lastIncludedVersion),
+                        Criteria.where("version").exists(false)
+                )
+        ));
+
+        Update update = new Update()
+                .set("roomUuid", roomUuid)
+                .set("roomAssetId", roomAssetId)
+                .set("pageIndex", pageIndex)
+                .set("version", lastIncludedVersion)
+                .set("snapshotData", snapshotData)
+                .set("createdBy", member.getId())
+                .set("createdByName", member.getName())
+                .set("createdAt", Instant.now());
+
+        FindAndModifyOptions options = FindAndModifyOptions.options()
+                .upsert(true)
+                .returnNew(true);
+
+        try {
+            DrawingSnapshot updated = mongoTemplate.findAndModify(query, update, options, DrawingSnapshot.class);
+            if (updated != null) {
+                return updated;
+            }
+            return getLatestSnapshot(roomAssetId, pageIndex)
+                    .orElseThrow(() -> new DrawingException(DrawingErrorCode.SNAPSHOT_SAVE_FAILED));
+        } catch (DuplicateKeyException e) {
+            log.info("스냅샷 upsert 경쟁 감지: roomAssetId={}, pageIndex={}, incomingVersion={}",
+                    roomAssetId, pageIndex, lastIncludedVersion);
+            return getLatestSnapshot(roomAssetId, pageIndex)
+                    .orElseThrow(() -> new DrawingException(DrawingErrorCode.SNAPSHOT_SAVE_FAILED));
+        } catch (DrawingException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("스냅샷 upsert 실패: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
+                    roomUuid, roomAssetId, pageIndex, lastIncludedVersion, e);
+            throw new DrawingException(DrawingErrorCode.SNAPSHOT_SAVE_FAILED);
+        }
     }
 }
