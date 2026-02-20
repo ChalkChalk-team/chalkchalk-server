@@ -4,509 +4,577 @@
     <meta charset="UTF-8">
     <title>Team Asset E2E Test</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; background: #f8fafc; }
-        h2 { color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-        .section-title { color: #334155; font-size: 16px; margin: 24px 0 8px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .step { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 8px 0; }
-        .step h3 { margin: 0 0 12px; color: #475569; font-size: 14px; }
-        .step h3 .num { background: #2563eb; color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; margin-right: 6px; }
-        .step h3 .num.green { background: #16a34a; }
-        .step h3 .num.purple { background: #7c3aed; }
-        label { font-size: 13px; color: #64748b; display: block; margin: 6px 0 2px; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
-        button { padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 8px; }
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #94a3b8; cursor: not-allowed; }
-        button.green { background: #16a34a; }
-        button.green:hover { background: #15803d; }
-        button.purple { background: #7c3aed; }
-        button.purple:hover { background: #6d28d9; }
-        .log { margin-top: 16px; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12px; max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
-        .log .ok { color: #4ade80; }
-        .log .err { color: #f87171; }
-        .log .info { color: #60a5fa; }
-        .log .warn { color: #facc15; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* ── Top Bar ── */
+        .topbar { background: #1e293b; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+        .topbar h2 { font-size: 15px; font-weight: 600; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: white; margin-left: 4px; }
+        .badge.on { background: #16a34a; }
+        .badge.off { background: #475569; }
+
+        /* ── Main Layout ── */
+        .main { display: flex; flex: 1; overflow: hidden; }
+
+        /* ── Steps Panel ── */
+        .steps { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .section-title { color: #334155; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 4px 4px; border-bottom: 1px solid #e2e8f0; margin-top: 4px; }
+        .step { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+        .step h3 { color: #475569; font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .num { background: #2563eb; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+        .num.green { background: #16a34a; }
+        .num.purple { background: #7c3aed; }
+        .num.orange { background: #ea580c; }
+        .num.red { background: #dc2626; }
+        label { font-size: 12px; color: #64748b; display: block; margin: 6px 0 2px; }
+        input, select { width: 100%; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; }
+        input[type="file"] { padding: 5px; }
         .row { display: flex; gap: 8px; }
         .row > * { flex: 1; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: white; margin-left: 6px; }
-        .badge.on { background: #16a34a; }
-        .badge.off { background: #94a3b8; }
-        #state { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
-        .clear-btn { background: #64748b; font-size: 12px; padding: 4px 10px; float: right; margin: 0; }
+        button { padding: 7px 14px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; margin-top: 8px; }
+        button:hover { opacity: 0.88; }
+        button:disabled { background: #94a3b8; cursor: not-allowed; opacity: 1; }
+        button.green { background: #16a34a; }
+        button.purple { background: #7c3aed; }
+        button.orange { background: #ea580c; }
+        button.red { background: #dc2626; }
+        button.gray { background: #64748b; }
+
+        /* ── Preview Image Box ── */
+        .preview-box { margin-top: 10px; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; min-height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .preview-box img { max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 4px; }
+        .preview-box .placeholder { color: #94a3b8; font-size: 12px; }
+        .thumb-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .thumb-card { border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; width: 120px; background: white; }
+        .thumb-card img { width: 100%; height: 80px; object-fit: cover; display: block; background: #f1f5f9; }
+        .thumb-card .thumb-label { font-size: 10px; color: #64748b; padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .thumb-card .no-thumb { width: 100%; height: 80px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 11px; }
+
+        /* ── Log Panel ── */
+        .log-panel { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; border-left: 1px solid #e2e8f0; background: #0f172a; }
+        .log-header { padding: 10px 14px; background: #1e293b; color: #94a3b8; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .log-header button { margin: 0; padding: 3px 8px; font-size: 11px; background: #334155; }
+        .log-body { flex: 1; overflow-y: auto; padding: 10px 12px; font-family: 'Consolas', monospace; font-size: 11.5px; white-space: pre-wrap; word-break: break-all; color: #e2e8f0; }
+        .log-body .ok   { color: #4ade80; }
+        .log-body .err  { color: #f87171; }
+        .log-body .info { color: #60a5fa; }
+        .log-body .warn { color: #facc15; }
+        .log-body .sep  { color: #334155; }
+        .log-entry { line-height: 1.5; }
     </style>
 </head>
 <body>
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
     <h2>Team Asset E2E Test</h2>
+    <span style="font-size:12px; color:#94a3b8;">
+        Token <span id="stToken" class="badge off">none</span>
+        Team <span id="stTeam" class="badge off">none</span>
+        Asset <span id="stAsset" class="badge off">none</span>
+        Preview <span id="stPreview" class="badge off">none</span>
+        Room <span id="stRoom" class="badge off">none</span>
+    </span>
+</div>
 
-    <div id="state">
-        Token: <span id="stToken" class="badge off">none</span>
-        Team: <span id="stTeam" class="badge off">none</span>
-        Asset: <span id="stAsset" class="badge off">none</span>
-        Room: <span id="stRoom" class="badge off">none</span>
-    </div>
+<div class="main">
 
-    <!-- ===== Auth & Team ===== -->
-    <div class="section-title">Auth & Team Setup</div>
+    <!-- ── Steps ── -->
+    <div class="steps">
 
-    <div class="step">
-        <h3><span class="num">1</span> Guest Login</h3>
-        <div class="row">
-            <div>
-                <label>Device ID</label>
-                <input id="deviceId" value="test-device-e2e-0001" />
+        <div class="section-title">Auth & Team</div>
+
+        <div class="step">
+            <h3><span class="num">1</span> Guest Login</h3>
+            <div class="row">
+                <div><label>Device ID</label><input id="deviceId" value="test-device-e2e-0001" /></div>
+                <div><label>Name</label><input id="guestName" value="E2E Tester" /></div>
             </div>
-            <div>
-                <label>Name (optional)</label>
-                <input id="guestName" value="E2E Tester" />
+            <button onclick="guestLogin()">Login</button>
+        </div>
+
+        <div class="step">
+            <h3><span class="num">2</span> Create Team</h3>
+            <label>Team Name</label>
+            <input id="teamName" value="E2E Test Team" />
+            <button onclick="createTeam()" id="btnCreateTeam" disabled>Create Team</button>
+        </div>
+
+        <div class="section-title">File Upload & Asset</div>
+
+        <div class="step">
+            <h3><span class="num">3</span> Upload File → Create Asset</h3>
+            <label>File (PDF or Image)</label>
+            <input type="file" id="fileInput" />
+            <div class="row" style="margin-top:6px">
+                <div><label>Asset Type</label>
+                    <select id="assetType"><option value="PDF">PDF</option><option value="IMAGE">IMAGE</option></select>
+                </div>
+                <div><label>Total Pages (PDF)</label><input id="totalPages" type="number" placeholder="optional" /></div>
+            </div>
+            <button onclick="uploadAndCreateAsset()" id="btnUpload" disabled>Upload & Create Asset</button>
+        </div>
+
+        <div class="step">
+            <h3><span class="num orange">4</span> Upload Preview Image</h3>
+            <label>Preview Image (JPG/PNG)</label>
+            <input type="file" id="previewFileInput" accept="image/*" />
+            <div class="row" style="margin-top:6px; align-items:flex-end;">
+                <div><label>Asset ID</label><input id="previewAssetId" type="number" placeholder="auto-filled after step 3" /></div>
+                <div><button class="orange" onclick="uploadPreviewImage()" id="btnPreview" disabled style="width:100%">Upload Preview</button></div>
+            </div>
+            <div class="preview-box" id="previewResult">
+                <span class="placeholder">업로드 후 여기에 이미지가 표시됩니다</span>
             </div>
         </div>
-        <button onclick="guestLogin()">Login</button>
-    </div>
 
-    <div class="step">
-        <h3><span class="num">2</span> Create Team</h3>
-        <label>Team Name</label>
-        <input id="teamName" value="E2E Test Team" />
-        <button onclick="createTeam()" id="btnCreateTeam" disabled>Create Team</button>
-    </div>
-
-    <!-- ===== File Upload ===== -->
-    <div class="section-title">File Upload & Asset</div>
-
-    <div class="step">
-        <h3><span class="num">3</span> Upload File (Presigned URL → R2 → Asset)</h3>
-        <label>File</label>
-        <input type="file" id="fileInput" />
-        <div class="row" style="margin-top:8px">
-            <div>
-                <label>Asset Type</label>
-                <select id="assetType">
-                    <option value="PDF">PDF</option>
-                    <option value="IMAGE">IMAGE</option>
-                </select>
-            </div>
-            <div>
-                <label>Total Pages (PDF only)</label>
-                <input id="totalPages" type="number" placeholder="optional" />
-            </div>
+        <div class="step">
+            <h3><span class="num green">5</span> Get Team Assets (thumbnail 확인)</h3>
+            <button class="green" onclick="getTeamAssets()" id="btnVerify" disabled>Fetch Team Assets</button>
+            <div class="thumb-grid" id="thumbGrid"></div>
         </div>
-        <button onclick="uploadAndCreateAsset()" id="btnUpload" disabled>Upload & Create Asset</button>
-    </div>
 
-    <div class="step">
-        <h3><span class="num green">4</span> Verify: Get Team Assets</h3>
-        <button class="green" onclick="getTeamAssets()" id="btnVerify" disabled>Fetch Team Assets</button>
-    </div>
-
-    <div class="step">
-        <h3><span class="num green">5</span> Get Single Asset Detail</h3>
-        <div class="row">
-            <div>
-                <label>Asset ID</label>
-                <input id="detailAssetId" type="number" placeholder="auto-filled after upload" />
+        <div class="step">
+            <h3><span class="num green">6</span> Get Single Asset Detail</h3>
+            <div class="row">
+                <div><label>Asset ID</label><input id="detailAssetId" type="number" placeholder="auto-filled after upload" /></div>
             </div>
+            <button class="green" onclick="getAssetDetail()" id="btnDetail" disabled>Fetch Asset Detail</button>
         </div>
-        <button class="green" onclick="getAssetDetail()" id="btnDetail" disabled>Fetch Asset Detail</button>
-    </div>
 
-    <!-- ===== Room ===== -->
-    <div class="section-title">Room & Load Team Asset</div>
+        <div class="section-title">Room & Load Team Asset</div>
 
-    <div class="step">
-        <h3><span class="num purple">6</span> Create Room</h3>
-        <label>Room Title</label>
-        <input id="roomTitle" value="E2E Test Room" />
-        <button class="purple" onclick="createRoom()" id="btnCreateRoom" disabled>Create Room</button>
-    </div>
+        <div class="step">
+            <h3><span class="num purple">7</span> Create Room</h3>
+            <label>Room Title</label>
+            <input id="roomTitle" value="E2E Test Room" />
+            <button class="purple" onclick="createRoom()" id="btnCreateRoom" disabled>Create Room</button>
+        </div>
 
-    <div class="step">
-        <h3><span class="num purple">7</span> Join Room</h3>
-        <div class="row">
-            <div>
-                <label>Room UUID</label>
-                <input id="roomUuid" placeholder="auto-filled after room creation" />
+        <div class="step">
+            <h3><span class="num purple">8</span> Join Room</h3>
+            <label>Room UUID</label>
+            <input id="roomUuid" placeholder="auto-filled after room creation" />
+            <button class="purple" onclick="joinRoom()" id="btnJoinRoom" disabled>Join Room</button>
+        </div>
+
+        <div class="step">
+            <h3><span class="num purple">9</span> Load Team Asset into Room</h3>
+            <label>Team Asset ID</label>
+            <input id="loadAssetId" type="number" placeholder="auto-filled after upload" />
+            <button class="purple" onclick="loadTeamAssetToRoom()" id="btnLoadAsset" disabled>Load Asset into Room</button>
+        </div>
+
+        <div class="step">
+            <h3><span class="num purple">10</span> Get Room Assets</h3>
+            <button class="purple" onclick="getRoomAssets()" id="btnRoomAssets" disabled>Fetch Room Assets</button>
+        </div>
+
+        <div class="section-title">Save Asset (Overwrite)</div>
+
+        <div class="step">
+            <h3><span class="num red">11</span> Save: Upload Modified File → Overwrite Original</h3>
+            <label>Modified File</label>
+            <input type="file" id="overwriteFileInput" />
+            <div class="row" style="margin-top:6px">
+                <div><label>Room Asset ID</label><input id="overwriteRoomAssetId" type="number" placeholder="auto-filled after step 9" /></div>
             </div>
+            <button class="red" onclick="testOverwriteSave()" id="btnOverwrite" disabled>Save (OVERWRITE)</button>
         </div>
-        <button class="purple" onclick="joinRoom()" id="btnJoinRoom" disabled>Join Room</button>
-    </div>
 
-    <div class="step">
-        <h3><span class="num purple">8</span> Load Team Asset into Room</h3>
-        <div class="row">
-            <div>
-                <label>Team Asset ID to load</label>
-                <input id="loadAssetId" type="number" placeholder="auto-filled after upload" />
-            </div>
+        <div class="step">
+            <h3><span class="num green">12</span> Verify: storageKey Changed</h3>
+            <button class="green" onclick="verifyOverwrite()" id="btnVerifyOverwrite" disabled>Verify storageKey Changed</button>
         </div>
-        <button class="purple" onclick="loadTeamAssetToRoom()" id="btnLoadAsset" disabled>Load Asset into Room</button>
+
     </div>
 
-    <div class="step">
-        <h3><span class="num purple">9</span> Verify: Get Room Assets</h3>
-        <button class="purple" onclick="getRoomAssets()" id="btnRoomAssets" disabled>Fetch Room Assets</button>
-    </div>
-
-    <!-- ===== Save (Overwrite) ===== -->
-    <div class="section-title">Save Asset (Overwrite Test)</div>
-
-    <div class="step">
-        <h3><span class="num" style="background:#dc2626">10</span> Save: Upload Modified File → Overwrite Original</h3>
-        <p style="font-size:12px;color:#64748b;margin:0 0 12px">수정된 파일을 선택하면, presigned URL 발급 → R2 업로드 → save API (OVERWRITE) 호출 → TeamAsset storageKey 변경을 확인합니다.</p>
-        <label>Modified File (덮어쓸 파일)</label>
-        <input type="file" id="overwriteFileInput" />
-        <div class="row" style="margin-top:8px">
-            <div>
-                <label>Room Asset ID</label>
-                <input id="overwriteRoomAssetId" type="number" placeholder="auto-filled after step 8" />
-            </div>
+    <!-- ── Log Panel ── -->
+    <div class="log-panel">
+        <div class="log-header">
+            <span>LOG</span>
+            <button onclick="clearLog()">Clear</button>
         </div>
-        <button style="background:#dc2626" onclick="testOverwriteSave()" id="btnOverwrite" disabled>Save (OVERWRITE)</button>
+        <div class="log-body" id="log"></div>
     </div>
 
-    <div class="step">
-        <h3><span class="num green">11</span> Verify: Check TeamAsset storageKey Changed</h3>
-        <p style="font-size:12px;color:#64748b;margin:0 0 12px">TeamAsset 상세를 다시 조회하여 storageKey가 새 키로 변경되었는지 확인합니다.</p>
-        <button class="green" onclick="verifyOverwrite()" id="btnVerifyOverwrite" disabled>Verify storageKey Changed</button>
-    </div>
+</div>
 
-    <!-- ===== Log ===== -->
-    <button class="clear-btn" onclick="document.getElementById('log').innerHTML=''">Clear Log</button>
-    <div class="log" id="log"></div>
+<script>
+    const BASE = 'http://localhost:8080';
+    let accessToken = '';
+    let teamId = null;
+    let lastAssetId = null;
+    let roomUuid = null;
+    let lastRoomAssetId = null;
+    let originalStorageKey = null;
 
-    <script>
-        const BASE = 'http://localhost:8080';
-        let accessToken = '';
-        let teamId = null;
-        let lastAssetId = null;
-        let roomUuid = null;
-        let lastRoomAssetId = null;
-        let originalStorageKey = null;
+    // ── Helpers ──
 
-        // ── Helpers ──
+    function log(msg, type = '') {
+        const el = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'log-entry' + (type ? ' ' + type : '');
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+    }
 
-        function log(msg, type = '') {
-            const el = document.getElementById('log');
-            const span = document.createElement('span');
-            span.className = type;
-            span.textContent = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-            el.appendChild(span);
-            el.scrollTop = el.scrollHeight;
+    function logSep() {
+        const el = document.getElementById('log');
+        const div = document.createElement('div');
+        div.className = 'log-entry sep';
+        div.textContent = '─'.repeat(38);
+        el.appendChild(div);
+    }
+
+    function clearLog() {
+        document.getElementById('log').innerHTML = '';
+    }
+
+    function setState(id, value) {
+        const el = document.getElementById(id);
+        el.textContent = value || 'none';
+        el.className = value ? 'badge on' : 'badge off';
+    }
+
+    async function api(method, path, body = null) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+        const opts = { method, headers };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(BASE + path, opts);
+        const text = await res.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch { data = text; }
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${JSON.stringify(data)}`);
+        return data;
+    }
+
+    function enableButtons(...ids) {
+        ids.forEach(id => document.getElementById(id).disabled = false);
+    }
+
+    // ── Step 1: Guest Login ──
+
+    async function guestLogin() {
+        logSep();
+        try {
+            const deviceId = document.getElementById('deviceId').value;
+            const name = document.getElementById('guestName').value;
+            log(`POST /api/auth/guest-login  deviceId=${deviceId}`, 'info');
+            const data = await api('POST', '/api/auth/guest-login', { deviceId, name: name || undefined });
+            accessToken = data.accessToken;
+            setState('stToken', accessToken.substring(0, 10) + '…');
+            log(`Login OK`, 'ok');
+            enableButtons('btnCreateTeam');
+        } catch (e) {
+            log(`Login FAILED: ${e.message}`, 'err');
         }
+    }
 
-        function setState(id, value) {
-            const el = document.getElementById(id);
-            el.textContent = value || 'none';
-            el.className = value ? 'badge on' : 'badge off';
+    // ── Step 2: Create Team ──
+
+    async function createTeam() {
+        logSep();
+        try {
+            const name = document.getElementById('teamName').value;
+            log(`POST /api/teams  name=${name}`, 'info');
+            const data = await api('POST', '/api/teams', { name });
+            teamId = data.teamId;
+            setState('stTeam', `id=${teamId}`);
+            log(`Team created  teamId=${teamId}`, 'ok');
+            enableButtons('btnUpload', 'btnVerify', 'btnDetail', 'btnCreateRoom');
+        } catch (e) {
+            log(`Create team FAILED: ${e.message}`, 'err');
         }
+    }
 
-        async function api(method, path, body = null) {
-            const headers = { 'Content-Type': 'application/json' };
-            if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-            const opts = { method, headers };
-            if (body) opts.body = JSON.stringify(body);
-            const res = await fetch(BASE + path, opts);
+    // ── Step 3: Upload & Create Asset ──
+
+    async function uploadAndCreateAsset() {
+        logSep();
+        try {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) { log('파일을 선택해주세요.', 'err'); return; }
+
+            log(`[1/3] Presigned URL 요청...`, 'info');
+            const presigned = await api('POST', '/api/storage/presigned-url/upload', {
+                teamId, fileName: file.name,
+                contentType: file.type || 'application/octet-stream'
+            });
+            log(`storageKey: ${presigned.storageKey}`, 'ok');
+
+            log(`[2/3] R2 업로드...`, 'info');
+            const uploadRes = await fetch(presigned.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                body: file
+            });
+            if (!uploadRes.ok) throw new Error(`R2 upload failed: ${uploadRes.status}`);
+            log(`R2 upload OK`, 'ok');
+
+            log(`[3/3] Asset 생성...`, 'info');
+            const assetType = document.getElementById('assetType').value;
+            const totalPagesVal = document.getElementById('totalPages').value;
+            const body = { type: assetType, name: file.name, storageKey: presigned.storageKey };
+            if (totalPagesVal) body.totalPages = parseInt(totalPagesVal);
+
+            const asset = await api('POST', `/api/teams/${teamId}/assets`, body);
+            lastAssetId = asset.assetId;
+            setState('stAsset', `id=${lastAssetId}`);
+            document.getElementById('detailAssetId').value = lastAssetId;
+            document.getElementById('loadAssetId').value = lastAssetId;
+            document.getElementById('previewAssetId').value = lastAssetId;
+            log(`Asset created  assetId=${asset.assetId}`, 'ok');
+            enableButtons('btnPreview');
+        } catch (e) {
+            log(`Upload FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 4: Upload Preview Image ──
+
+    async function uploadPreviewImage() {
+        logSep();
+        try {
+            const file = document.getElementById('previewFileInput').files[0];
+            if (!file) { log('이미지 파일을 선택해주세요.', 'err'); return; }
+
+            const assetId = document.getElementById('previewAssetId').value;
+            if (!assetId) { log('Asset ID가 필요합니다.', 'err'); return; }
+
+            log(`PATCH /api/teams/${teamId}/assets/${assetId}/preview`, 'info');
+            log(`파일: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+
+            const formData = new FormData();
+            formData.append('previewImage', file);
+
+            const res = await fetch(`${BASE}/api/teams/${teamId}/assets/${assetId}/preview`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${accessToken}` },
+                body: formData
+            });
+
             const text = await res.text();
             let data = null;
             try { data = JSON.parse(text); } catch { data = text; }
-            if (!res.ok) {
-                throw new Error(`${res.status} ${res.statusText}: ${JSON.stringify(data)}`);
-            }
-            return data;
+            if (!res.ok) throw new Error(`${res.status}: ${JSON.stringify(data)}`);
+
+            log(`Preview upload OK`, 'ok');
+            log(`assetId: ${data.assetId}`, 'info');
+            log(`previewImageUrl: ${data.previewImageUrl.substring(0, 60)}...`, 'info');
+
+            setState('stPreview', `id=${data.assetId}`);
+
+            // 이미지 미리보기 표시
+            const box = document.getElementById('previewResult');
+            box.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = data.previewImageUrl;
+            img.alt = 'preview';
+            img.onerror = () => { box.innerHTML = '<span class="placeholder" style="color:#f87171">이미지 로드 실패 (URL 만료 or 오류)</span>'; };
+            box.appendChild(img);
+
+        } catch (e) {
+            log(`Preview upload FAILED: ${e.message}`, 'err');
         }
+    }
 
-        function enableButtons(...ids) {
-            ids.forEach(id => document.getElementById(id).disabled = false);
-        }
+    // ── Step 5: Get Team Assets ──
 
-        // ── Step 1: Guest Login ──
+    async function getTeamAssets() {
+        logSep();
+        try {
+            log(`GET /api/teams/${teamId}/assets`, 'info');
+            const data = await api('GET', `/api/teams/${teamId}/assets`);
+            const assets = data.assets || data.content || data;
+            log(`${Array.isArray(assets) ? assets.length : '?'}개 asset 조회됨`, 'ok');
 
-        async function guestLogin() {
-            try {
-                const deviceId = document.getElementById('deviceId').value;
-                const name = document.getElementById('guestName').value;
-                log(`POST /api/auth/guest-login  deviceId=${deviceId}`, 'info');
-                const data = await api('POST', '/api/auth/guest-login', { deviceId, name: name || undefined });
-                accessToken = data.accessToken;
-                setState('stToken', accessToken.substring(0, 16) + '...');
-                log(`Login OK  accessToken=${accessToken.substring(0, 30)}...`, 'ok');
-                enableButtons('btnCreateTeam');
-            } catch (e) {
-                log(`Login FAILED: ${e.message}`, 'err');
-            }
-        }
+            const grid = document.getElementById('thumbGrid');
+            grid.innerHTML = '';
 
-        // ── Step 2: Create Team ──
-
-        async function createTeam() {
-            try {
-                const name = document.getElementById('teamName').value;
-                log(`POST /api/teams  name=${name}`, 'info');
-                const data = await api('POST', '/api/teams', { name });
-                teamId = data.teamId;
-                setState('stTeam', `id=${teamId}`);
-                log(`Team created  teamId=${teamId}`, 'ok');
-                enableButtons('btnUpload', 'btnVerify', 'btnDetail', 'btnCreateRoom');
-            } catch (e) {
-                log(`Create team FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 3: Upload & Create Asset ──
-
-        async function uploadAndCreateAsset() {
-            try {
-                const file = document.getElementById('fileInput').files[0];
-                if (!file) { log('Please select a file.', 'err'); return; }
-
-                // 3-1. Get presigned URL
-                log(`POST /api/storage/presigned-url/upload  teamId=${teamId}, fileName=${file.name}`, 'info');
-                const presigned = await api('POST', '/api/storage/presigned-url/upload', {
-                    teamId: teamId,
-                    fileName: file.name,
-                    contentType: file.type || 'application/octet-stream'
-                });
-                log(`Presigned URL OK  storageKey=${presigned.storageKey}`, 'ok');
-
-                // 3-2. Upload to R2
-                log(`PUT ${presigned.uploadUrl.substring(0, 60)}...`, 'info');
-                const uploadRes = await fetch(presigned.uploadUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
-                });
-                if (!uploadRes.ok) throw new Error(`R2 upload failed: ${uploadRes.status}`);
-                log(`R2 upload OK  status=${uploadRes.status}`, 'ok');
-
-                // 3-3. Create team asset
-                const assetType = document.getElementById('assetType').value;
-                const totalPagesVal = document.getElementById('totalPages').value;
-                const body = {
-                    type: assetType,
-                    name: file.name,
-                    storageKey: presigned.storageKey,
-                };
-                if (totalPagesVal) body.totalPages = parseInt(totalPagesVal);
-
-                log(`POST /api/teams/${teamId}/assets  storageKey=${presigned.storageKey}`, 'info');
-                const asset = await api('POST', `/api/teams/${teamId}/assets`, body);
-                lastAssetId = asset.assetId;
-                setState('stAsset', `id=${lastAssetId}`);
-                document.getElementById('detailAssetId').value = lastAssetId;
-                document.getElementById('loadAssetId').value = lastAssetId;
-                log(`Asset created  assetId=${asset.assetId}, storageKey=${asset.storageKey}`, 'ok');
-
-                if (asset.storageKey === presigned.storageKey) {
-                    log(`PASS: storageKey matches!`, 'ok');
-                } else {
-                    log(`FAIL: storageKey mismatch! expected=${presigned.storageKey}, got=${asset.storageKey}`, 'err');
-                }
-            } catch (e) {
-                log(`Upload FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 4: Get Team Assets ──
-
-        async function getTeamAssets() {
-            try {
-                log(`GET /api/teams/${teamId}/assets`, 'info');
-                const data = await api('GET', `/api/teams/${teamId}/assets`);
-                const assets = data.assets || data.content || data;
-                log(`Found ${Array.isArray(assets) ? assets.length : '?'} asset(s)`, 'ok');
-                if (Array.isArray(assets)) {
-                    assets.forEach(a => {
-                        const keyStatus = a.storageKey ? 'OK' : 'NULL';
-                        log(`  id=${a.assetId}  name=${a.name}  type=${a.type}  storageKey=${a.storageKey || 'null'} [${keyStatus}]  totalPages=${a.totalPages || 'null'}`,
-                            a.storageKey ? 'ok' : 'err');
-                    });
-                } else {
-                    log(JSON.stringify(data, null, 2), 'info');
-                }
-            } catch (e) {
-                log(`Fetch assets FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 5: Get Single Asset Detail ──
-
-        async function getAssetDetail() {
-            try {
-                const assetId = document.getElementById('detailAssetId').value;
-                if (!assetId) { log('Enter asset ID.', 'err'); return; }
-                log(`GET /api/teams/${teamId}/assets/${assetId}`, 'info');
-                const a = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
-                log(`Asset detail:`, 'ok');
-                log(`  assetId      = ${a.assetId}`, 'info');
-                log(`  name         = ${a.name}`, 'info');
-                log(`  type         = ${a.type}`, 'info');
-                log(`  storageKey   = ${a.storageKey || 'null'}`, a.storageKey ? 'ok' : 'err');
-                log(`  totalPages   = ${a.totalPages || 'null'}`, 'info');
-                log(`  version      = ${a.version}`, 'info');
-                log(`  isLatest     = ${a.isLatest}`, 'info');
-                log(`  sourceType   = ${a.sourceType}`, 'info');
-                log(`  uploader     = ${a.uploader?.name} (id=${a.uploader?.memberId})`, 'info');
-                log(`  createdAt    = ${a.createdAt}`, 'info');
-            } catch (e) {
-                log(`Fetch asset detail FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 6: Create Room ──
-
-        async function createRoom() {
-            try {
-                const title = document.getElementById('roomTitle').value;
-                log(`POST /api/rooms  teamId=${teamId}, title=${title}`, 'info');
-                const data = await api('POST', '/api/rooms', { teamId, title });
-                roomUuid = data.roomUuid;
-                document.getElementById('roomUuid').value = roomUuid;
-                setState('stRoom', roomUuid.substring(0, 8) + '...');
-                log(`Room created  roomUuid=${roomUuid}`, 'ok');
-                enableButtons('btnJoinRoom');
-            } catch (e) {
-                log(`Create room FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 7: Join Room ──
-
-        async function joinRoom() {
-            try {
-                const uuid = document.getElementById('roomUuid').value;
-                if (!uuid) { log('Room UUID is required.', 'err'); return; }
-                log(`POST /api/rooms/${uuid}/join`, 'info');
-                const data = await api('POST', `/api/rooms/${uuid}/join`, {});
-                roomUuid = uuid;
-                log(`Joined room  role=${data.myRole}, joinedAt=${data.joinedAt}`, 'ok');
-                enableButtons('btnLoadAsset', 'btnRoomAssets');
-            } catch (e) {
-                log(`Join room FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 8: Load Team Asset into Room ──
-
-        async function loadTeamAssetToRoom() {
-            try {
-                const teamAssetId = parseInt(document.getElementById('loadAssetId').value);
-                if (!teamAssetId) { log('Enter team asset ID to load.', 'err'); return; }
-                log(`POST /api/rooms/${roomUuid}/assets/team  teamAssetId=${teamAssetId}`, 'info');
-                const data = await api('POST', `/api/rooms/${roomUuid}/assets/team`, {
-                    teamAssetId: teamAssetId,
-                    savePolicy: 'OVERWRITE'
-                });
-                lastRoomAssetId = data.id;
-                document.getElementById('overwriteRoomAssetId').value = lastRoomAssetId;
-                log(`Asset loaded into room!`, 'ok');
-                log(`  roomAssetId  = ${data.id}`, 'info');
-                log(`  teamAssetId  = ${data.teamAssetId}`, 'info');
-                log(`  assetName    = ${data.assetName}`, 'info');
-                log(`  assetType    = ${data.assetType}`, 'info');
-                log(`  totalPages   = ${data.totalPages || 'null'}`, 'info');
-                log(`  currentPage  = ${data.currentPageNumber}`, 'info');
-                log(`  isActive     = ${data.isActive}`, 'info');
-                log(`  addedBy      = ${data.addedByName} (id=${data.addedById})`, 'info');
-                enableButtons('btnOverwrite');
-            } catch (e) {
-                log(`Load asset FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 10: Save Asset (OVERWRITE) ──
-
-        async function testOverwriteSave() {
-            try {
-                const file = document.getElementById('overwriteFileInput').files[0];
-                if (!file) { log('Please select a modified file.', 'err'); return; }
-                const roomAssetId = document.getElementById('overwriteRoomAssetId').value;
-                if (!roomAssetId) { log('Room Asset ID is required.', 'err'); return; }
-
-                // 10-0. 먼저 현재 TeamAsset storageKey 기록
-                const assetId = document.getElementById('detailAssetId').value;
-                if (assetId) {
-                    const before = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
-                    originalStorageKey = before.storageKey;
-                    log(`Original storageKey: ${originalStorageKey}`, 'warn');
-                }
-
-                // 10-1. Presigned URL 발급
-                log(`POST /api/storage/presigned-url/upload (modified file)`, 'info');
-                const presigned = await api('POST', '/api/storage/presigned-url/upload', {
-                    teamId: teamId,
-                    fileName: file.name,
-                    contentType: file.type || 'application/octet-stream'
-                });
-                log(`New presigned URL OK  storageKey=${presigned.storageKey}`, 'ok');
-
-                // 10-2. R2 업로드
-                log(`PUT R2 (modified file)...`, 'info');
-                const uploadRes = await fetch(presigned.uploadUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-                    body: file
-                });
-                if (!uploadRes.ok) throw new Error(`R2 upload failed: ${uploadRes.status}`);
-                log(`R2 upload OK  status=${uploadRes.status}`, 'ok');
-
-                // 10-3. Save API 호출 (OVERWRITE)
-                log(`POST /api/rooms/${roomUuid}/assets/${roomAssetId}/save  storageKey=${presigned.storageKey}`, 'info');
-                const data = await api('POST', `/api/rooms/${roomUuid}/assets/${roomAssetId}/save`, {
-                    storageKey: presigned.storageKey
-                });
-                log(`Save (OVERWRITE) OK!`, 'ok');
-                log(`  roomAssetId  = ${data.id}`, 'info');
-                log(`  teamAssetId  = ${data.teamAssetId}`, 'info');
-                log(`  assetName    = ${data.assetName}`, 'info');
-                log(`  savePolicy   = ${data.savePolicy}`, 'info');
-
-                enableButtons('btnVerifyOverwrite');
-                log(`→ Step 11에서 storageKey가 변경되었는지 확인하세요`, 'warn');
-            } catch (e) {
-                log(`Save (OVERWRITE) FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 11: Verify Overwrite ──
-
-        async function verifyOverwrite() {
-            try {
-                const assetId = document.getElementById('detailAssetId').value;
-                if (!assetId) { log('Asset ID is required (from step 3).', 'err'); return; }
-
-                log(`GET /api/teams/${teamId}/assets/${assetId}  (checking storageKey change)`, 'info');
-                const a = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
-
-                log(`TeamAsset detail after overwrite:`, 'ok');
-                log(`  storageKey (before) = ${originalStorageKey || 'unknown'}`, 'warn');
-                log(`  storageKey (after)  = ${a.storageKey}`, 'info');
-
-                if (originalStorageKey && a.storageKey !== originalStorageKey) {
-                    log(`✅ PASS: storageKey가 변경되었습니다!`, 'ok');
-                } else if (!originalStorageKey) {
-                    log(`⚠ WARN: 이전 storageKey를 기록하지 못했습니다. 수동으로 확인하세요.`, 'warn');
-                } else {
-                    log(`❌ FAIL: storageKey가 변경되지 않았습니다.`, 'err');
-                }
-            } catch (e) {
-                log(`Verify FAILED: ${e.message}`, 'err');
-            }
-        }
-
-        // ── Step 9: Get Room Assets ──
-
-        async function getRoomAssets() {
-            try {
-                log(`GET /api/rooms/${roomUuid}/assets`, 'info');
-                const assets = await api('GET', `/api/rooms/${roomUuid}/assets`);
-                log(`Room has ${assets.length} asset(s)`, 'ok');
+            if (Array.isArray(assets)) {
                 assets.forEach(a => {
-                    log(`  roomAssetId=${a.id}  teamAssetId=${a.teamAssetId}  name=${a.assetName}  type=${a.assetType}  totalPages=${a.totalPages || 'null'}  active=${a.isActive}`, 'info');
+                    log(`  id=${a.assetId}  name=${a.name}  thumbnail=${a.thumbnailImageUrl ? 'O' : 'X'}`, a.thumbnailImageUrl ? 'ok' : 'warn');
+
+                    const card = document.createElement('div');
+                    card.className = 'thumb-card';
+                    if (a.thumbnailImageUrl) {
+                        card.innerHTML = `<img src="${a.thumbnailImageUrl}" alt="thumb" /><div class="thumb-label">id=${a.assetId} ${a.name}</div>`;
+                    } else {
+                        card.innerHTML = `<div class="no-thumb">no preview</div><div class="thumb-label">id=${a.assetId} ${a.name}</div>`;
+                    }
+                    grid.appendChild(card);
                 });
-            } catch (e) {
-                log(`Fetch room assets FAILED: ${e.message}`, 'err');
+            } else {
+                log(JSON.stringify(data, null, 2), 'info');
             }
+        } catch (e) {
+            log(`Fetch assets FAILED: ${e.message}`, 'err');
         }
-    </script>
+    }
+
+    // ── Step 6: Get Asset Detail ──
+
+    async function getAssetDetail() {
+        logSep();
+        try {
+            const assetId = document.getElementById('detailAssetId').value;
+            if (!assetId) { log('Asset ID를 입력해주세요.', 'err'); return; }
+            log(`GET /api/teams/${teamId}/assets/${assetId}`, 'info');
+            const a = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
+            log(`assetId      = ${a.assetId}`, 'info');
+            log(`name         = ${a.name}`, 'info');
+            log(`type         = ${a.type}`, 'info');
+            log(`storageKey   = ${a.storageKey || 'null'}`, a.storageKey ? 'ok' : 'err');
+            log(`thumbnailUrl = ${a.thumbnailImageUrl ? a.thumbnailImageUrl.substring(0, 50) + '...' : 'null'}`, a.thumbnailImageUrl ? 'ok' : 'warn');
+            log(`version      = ${a.version}  isLatest=${a.isLatest}`, 'info');
+            log(`uploader     = ${a.uploader?.name} (id=${a.uploader?.memberId})`, 'info');
+        } catch (e) {
+            log(`Fetch asset FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 7: Create Room ──
+
+    async function createRoom() {
+        logSep();
+        try {
+            const title = document.getElementById('roomTitle').value;
+            log(`POST /api/rooms  teamId=${teamId}, title=${title}`, 'info');
+            const data = await api('POST', '/api/rooms', { teamId, title });
+            roomUuid = data.roomUuid;
+            document.getElementById('roomUuid').value = roomUuid;
+            setState('stRoom', roomUuid.substring(0, 8) + '…');
+            log(`Room created  roomUuid=${roomUuid}`, 'ok');
+            enableButtons('btnJoinRoom');
+        } catch (e) {
+            log(`Create room FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 8: Join Room ──
+
+    async function joinRoom() {
+        logSep();
+        try {
+            const uuid = document.getElementById('roomUuid').value;
+            if (!uuid) { log('Room UUID가 필요합니다.', 'err'); return; }
+            log(`POST /api/rooms/${uuid}/join`, 'info');
+            const data = await api('POST', `/api/rooms/${uuid}/join`, {});
+            roomUuid = uuid;
+            log(`Joined room  role=${data.myRole}`, 'ok');
+            enableButtons('btnLoadAsset', 'btnRoomAssets');
+        } catch (e) {
+            log(`Join room FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 9: Load Team Asset into Room ──
+
+    async function loadTeamAssetToRoom() {
+        logSep();
+        try {
+            const teamAssetId = parseInt(document.getElementById('loadAssetId').value);
+            if (!teamAssetId) { log('Team Asset ID를 입력해주세요.', 'err'); return; }
+            log(`POST /api/rooms/${roomUuid}/assets/team  teamAssetId=${teamAssetId}`, 'info');
+            const data = await api('POST', `/api/rooms/${roomUuid}/assets/team`, {
+                teamAssetId, savePolicy: 'OVERWRITE'
+            });
+            lastRoomAssetId = data.id;
+            document.getElementById('overwriteRoomAssetId').value = lastRoomAssetId;
+            log(`Asset loaded  roomAssetId=${data.id}  name=${data.assetName}`, 'ok');
+            enableButtons('btnOverwrite');
+        } catch (e) {
+            log(`Load asset FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 10: Get Room Assets ──
+
+    async function getRoomAssets() {
+        logSep();
+        try {
+            log(`GET /api/rooms/${roomUuid}/assets`, 'info');
+            const assets = await api('GET', `/api/rooms/${roomUuid}/assets`);
+            log(`${assets.length}개 room asset 조회됨`, 'ok');
+            assets.forEach(a => {
+                log(`  roomAssetId=${a.id}  teamAssetId=${a.teamAssetId}  name=${a.assetName}  active=${a.isActive}`, 'info');
+            });
+        } catch (e) {
+            log(`Fetch room assets FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 11: Save Asset (OVERWRITE) ──
+
+    async function testOverwriteSave() {
+        logSep();
+        try {
+            const file = document.getElementById('overwriteFileInput').files[0];
+            if (!file) { log('파일을 선택해주세요.', 'err'); return; }
+            const roomAssetId = document.getElementById('overwriteRoomAssetId').value;
+            if (!roomAssetId) { log('Room Asset ID가 필요합니다.', 'err'); return; }
+
+            const assetId = document.getElementById('detailAssetId').value;
+            if (assetId) {
+                const before = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
+                originalStorageKey = before.storageKey;
+                log(`기존 storageKey: ${originalStorageKey}`, 'warn');
+            }
+
+            log(`[1/3] Presigned URL 요청...`, 'info');
+            const presigned = await api('POST', '/api/storage/presigned-url/upload', {
+                teamId, fileName: file.name,
+                contentType: file.type || 'application/octet-stream'
+            });
+            log(`새 storageKey: ${presigned.storageKey}`, 'ok');
+
+            log(`[2/3] R2 업로드...`, 'info');
+            const uploadRes = await fetch(presigned.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': file.type || 'application/octet-stream' },
+                body: file
+            });
+            if (!uploadRes.ok) throw new Error(`R2 upload failed: ${uploadRes.status}`);
+            log(`R2 upload OK`, 'ok');
+
+            log(`[3/3] Save API (OVERWRITE)...`, 'info');
+            const data = await api('POST', `/api/rooms/${roomUuid}/assets/${roomAssetId}/save`, {
+                storageKey: presigned.storageKey
+            });
+            log(`Save OK  savePolicy=${data.savePolicy}`, 'ok');
+            enableButtons('btnVerifyOverwrite');
+            log(`→ Step 12에서 storageKey 변경 여부를 확인하세요`, 'warn');
+        } catch (e) {
+            log(`Save FAILED: ${e.message}`, 'err');
+        }
+    }
+
+    // ── Step 12: Verify Overwrite ──
+
+    async function verifyOverwrite() {
+        logSep();
+        try {
+            const assetId = document.getElementById('detailAssetId').value;
+            if (!assetId) { log('Asset ID가 필요합니다.', 'err'); return; }
+            log(`GET /api/teams/${teamId}/assets/${assetId}`, 'info');
+            const a = await api('GET', `/api/teams/${teamId}/assets/${assetId}`);
+            log(`before: ${originalStorageKey || '(미기록)'}`, 'warn');
+            log(`after : ${a.storageKey}`, 'info');
+            if (originalStorageKey && a.storageKey !== originalStorageKey) {
+                log(`✅ PASS: storageKey가 변경되었습니다!`, 'ok');
+            } else if (!originalStorageKey) {
+                log(`⚠ 이전 storageKey를 기록하지 못했습니다.`, 'warn');
+            } else {
+                log(`❌ FAIL: storageKey가 변경되지 않았습니다.`, 'err');
+            }
+        } catch (e) {
+            log(`Verify FAILED: ${e.message}`, 'err');
+        }
+    }
+</script>
 </body>
 </html>
