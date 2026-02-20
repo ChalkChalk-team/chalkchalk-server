@@ -5,6 +5,13 @@ import com.writingboard.server.domain.drawing.dto.response.DrawingStrokeDto;
 import com.writingboard.server.domain.drawing.exception.DrawingErrorCode;
 import com.writingboard.server.domain.drawing.exception.DrawingException;
 import com.writingboard.server.domain.drawing.repository.DrawingSnapshotRepository;
+import com.writingboard.server.domain.meeting.entity.Room;
+import com.writingboard.server.domain.meeting.entity.RoomParticipant;
+import com.writingboard.server.domain.meeting.entity.enums.ParticipantRole;
+import com.writingboard.server.domain.meeting.entity.enums.ParticipantState;
+import com.writingboard.server.domain.meeting.entity.enums.RoomStatus;
+import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
+import com.writingboard.server.domain.meeting.repository.RoomRepository;
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +38,8 @@ public class DrawingSnapshotService {
     private static final String BUFFER_KEY_PREFIX = "drawing:buffer:";
 
     private final DrawingSnapshotRepository snapshotRepository;
+    private final RoomRepository roomRepository;
+    private final RoomParticipantRepository participantRepository;
     private final MemberRepository memberRepository;
     private final RedisTemplate<String, DrawingStrokeDto> drawingRedisTemplate;
     private final MongoTemplate mongoTemplate;
@@ -41,6 +50,8 @@ public class DrawingSnapshotService {
     @Transactional
     public DrawingSnapshot saveSnapshot(Long memberId, String roomUuid, Long roomAssetId, Integer pageIndex,
                                         Long lastIncludedVersion, String snapshotData) {
+        validateSnapshotCreationPermission(memberId, roomUuid);
+
         Optional<DrawingSnapshot> latestSnapshot = getLatestSnapshot(roomAssetId, pageIndex);
 
         if (latestSnapshot.isPresent() && latestSnapshot.get().getVersion() >= lastIncludedVersion) {
@@ -142,6 +153,27 @@ public class DrawingSnapshotService {
             log.error("스냅샷 upsert 실패: roomUuid={}, roomAssetId={}, pageIndex={}, version={}",
                     roomUuid, roomAssetId, pageIndex, lastIncludedVersion, e);
             throw new DrawingException(DrawingErrorCode.SNAPSHOT_SAVE_FAILED);
+        }
+    }
+
+    private void validateSnapshotCreationPermission(Long memberId, String roomUuid) {
+        Room room = roomRepository.findByRoomUuid(roomUuid)
+                .orElseThrow(() -> new DrawingException(DrawingErrorCode.ROOM_NOT_FOUND));
+
+        if (room.getStatus() != RoomStatus.OPEN) {
+            throw new DrawingException(DrawingErrorCode.ROOM_CLOSED);
+        }
+
+        RoomParticipant participant = participantRepository
+                .findByRoomIdAndMemberId(room.getId(), memberId)
+                .orElseThrow(() -> new DrawingException(DrawingErrorCode.NOT_PARTICIPANT));
+
+        if (participant.getState() != ParticipantState.JOINED) {
+            throw new DrawingException(DrawingErrorCode.NOT_PARTICIPANT);
+        }
+
+        if (participant.getRole() != ParticipantRole.HOST) {
+            throw new DrawingException(DrawingErrorCode.SNAPSHOT_PERMISSION_DENIED);
         }
     }
 }
