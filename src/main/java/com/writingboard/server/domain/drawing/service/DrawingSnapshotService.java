@@ -89,7 +89,7 @@ public class DrawingSnapshotService {
      */
     @Transactional(readOnly = true)
     public Optional<DrawingSnapshot> getLatestSnapshot(Long roomAssetId, Integer pageIndex) {
-        return snapshotRepository.findFirstByRoomAssetIdAndPageIndexOrderByVersionDesc(roomAssetId, pageIndex);
+        return snapshotRepository.findByRoomAssetIdAndPageIndex(roomAssetId, pageIndex);
     }
 
     /**

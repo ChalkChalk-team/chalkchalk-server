@@ -8,6 +8,11 @@ import java.util.Optional;
 
 public interface DrawingSnapshotRepository extends MongoRepository<DrawingSnapshot, String> {
 
+    Optional<DrawingSnapshot> findByRoomAssetIdAndPageIndex(
+            Long roomAssetId,
+            Integer pageIndex
+    );
+
     Optional<DrawingSnapshot> findFirstByRoomAssetIdAndPageIndexOrderByVersionDesc(
             Long roomAssetId,
             Integer pageIndex
