@@ -29,4 +29,6 @@ public interface TeamAssetRepository extends JpaRepository<TeamAsset, Long> {
     List<TeamAsset> findByTeamIdAndStatus(Long teamId, AssetStatus status);
 
     List<TeamAsset> findByStatusAndDeletedAtBeforeAndStorageKeyIsNotNull(AssetStatus status, Instant before);
+
+    void deleteAllByTeamId(Long teamId);
 }

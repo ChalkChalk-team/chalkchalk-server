@@ -6,6 +6,7 @@ import com.writingboard.server.domain.team.dto.request.TeamCreateRequest;
 import com.writingboard.server.domain.team.dto.request.TeamUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.TeamResponse;
 import com.writingboard.server.domain.team.dto.response.TeamSummaryResponse;
+import com.writingboard.server.domain.meeting.repository.RoomRepository;
 import com.writingboard.server.domain.team.entity.Team;
 import com.writingboard.server.domain.team.entity.TeamAsset;
 import com.writingboard.server.domain.team.entity.TeamMember;
@@ -15,6 +16,7 @@ import com.writingboard.server.domain.team.entity.enums.TeamRole;
 import com.writingboard.server.domain.team.exception.TeamErrorCode;
 import com.writingboard.server.domain.team.exception.TeamException;
 import com.writingboard.server.domain.team.repository.TeamAssetRepository;
+import com.writingboard.server.domain.team.repository.TeamInvitationRepository;
 import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.domain.team.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamAssetRepository teamAssetRepository;
+    private final TeamInvitationRepository teamInvitationRepository;
+    private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
 
     @Transactional
@@ -113,13 +117,17 @@ public class TeamService {
         Team team = getTeamById(teamId);
         validateOwner(teamId, memberId);
 
-        // 모든 팀 자산 soft delete
-        List<TeamAsset> assets = teamAssetRepository.findByTeamIdAndStatus(teamId, AssetStatus.ACTIVE);
-        assets.forEach(TeamAsset::delete);
+        // 팀에 속한 모든 회의실 삭제 (cascade로 참가자, 초대, 자산도 삭제)
+        roomRepository.deleteAllByTeamId(teamId);
 
-        // 모든 팀 멤버 상태를 LEFT로 변경
-        List<TeamMember> members = teamMemberRepository.findByTeamIdAndStatus(teamId, TeamMemberStatus.ACTIVE);
-        members.forEach(TeamMember::leave);
+        // 모든 팀 자산 삭제
+        teamAssetRepository.deleteAllByTeamId(teamId);
+
+        // 모든 팀 초대 삭제
+        teamInvitationRepository.deleteAllByTeamId(teamId);
+
+        // 모든 팀 멤버 삭제
+        teamMemberRepository.deleteAllByTeamId(teamId);
 
         teamRepository.delete(team);
     }
