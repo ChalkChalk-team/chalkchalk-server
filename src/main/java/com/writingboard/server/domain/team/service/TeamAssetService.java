@@ -130,14 +130,14 @@ public class TeamAssetService {
         return buildAssetResponse(newVersion);
     }
 
-    @Transactional
     public TeamAssetPreviewImageUpdateResponse updatePreviewImage(Long memberId, Long teamId, Long assetId, MultipartFile file) {
         validateTeamMember(teamId, memberId);
 
-        TeamAsset teamAsset = teamAssetRepository.findByIdAndTeamIdAndStatus(assetId, teamId, AssetStatus.ACTIVE)
-                .orElseThrow(() -> new TeamException(TeamErrorCode.ASSET_NOT_FOUND));
+        if (!teamAssetRepository.existsByIdAndTeamIdAndStatus(assetId, teamId, AssetStatus.ACTIVE)) {
+            throw new TeamException(TeamErrorCode.ASSET_NOT_FOUND);
+        }
 
-        // 고정 키 패턴으로 동일 위치에 덮어씀
+        // teamId + assetId로 항상 동일 키 조합 → DB 저장 불필요
         String previewStorageKey = "previews/teams/" + teamId + "/assets/" + assetId + ".jpg";
 
         try {
@@ -146,8 +146,6 @@ public class TeamAssetService {
             throw new TeamException(TeamErrorCode.PREVIEW_UPLOAD_FAILED);
         }
 
-        teamAsset.updatePreviewImageUrl(previewStorageKey);
-
         String previewUrl = storageService.generateDownloadUrl(previewStorageKey).downloadUrl();
         return TeamAssetPreviewImageUpdateResponse.of(assetId, previewUrl);
     }
@@ -155,10 +153,8 @@ public class TeamAssetService {
     // Helper methods
     private AssetResponse buildAssetResponse(TeamAsset asset) {
         AssetResponse response = AssetResponse.of(asset);
-        if (asset.getPreviewImageUrl() != null) {
-            String previewUrl = storageService.generateDownloadUrl(asset.getPreviewImageUrl()).downloadUrl();
-            response.setThumbnailImageUrl(previewUrl);
-        }
+        String previewKey = "previews/teams/" + asset.getTeam().getId() + "/assets/" + asset.getId() + ".jpg";
+        response.setThumbnailImageUrl(storageService.generateDownloadUrl(previewKey).downloadUrl());
         return response;
     }
 
