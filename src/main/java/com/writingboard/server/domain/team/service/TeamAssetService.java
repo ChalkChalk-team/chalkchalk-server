@@ -1,13 +1,20 @@
 package com.writingboard.server.domain.team.service;
 
+import com.writingboard.server.domain.drawing.document.DrawingSnapshot;
+import com.writingboard.server.domain.drawing.repository.DrawingSnapshotRepository;
 import com.writingboard.server.domain.member.entity.Member;
 import com.writingboard.server.domain.member.repository.MemberRepository;
+import com.writingboard.server.domain.meeting.entity.RoomAsset;
+import com.writingboard.server.domain.meeting.repository.RoomAssetRepository;
 import com.writingboard.server.domain.team.dto.TeamAssetPreviewImageUpdateResponse;
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
 import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
+import com.writingboard.server.domain.team.dto.request.TeamAssetDrawingUpdateRequest;
+import com.writingboard.server.domain.drawing.dto.response.DrawingSnapshotResponse;
 import com.writingboard.server.domain.team.dto.response.AssetListResponse;
 import com.writingboard.server.domain.team.dto.response.AssetResponse;
+import com.writingboard.server.domain.team.dto.response.TeamAssetNoteDataResponse;
 import com.writingboard.server.domain.team.entity.Team;
 import com.writingboard.server.domain.team.entity.TeamAsset;
 import com.writingboard.server.domain.team.entity.enums.AssetSourceType;
@@ -28,7 +35,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +51,8 @@ public class TeamAssetService {
     private final TeamMemberRepository teamMemberRepository;
     private final MemberRepository memberRepository;
     private final StorageService storageService;
+    private final RoomAssetRepository roomAssetRepository;
+    private final DrawingSnapshotRepository drawingSnapshotRepository;
 
     @Transactional
     public AssetResponse createAsset(Long memberId, Long teamId, AssetCreateRequest request) {
@@ -148,6 +161,63 @@ public class TeamAssetService {
 
         String previewUrl = storageService.generateDownloadUrl(previewStorageKey).downloadUrl();
         return TeamAssetPreviewImageUpdateResponse.of(assetId, previewUrl);
+    }
+
+    public TeamAssetNoteDataResponse getNoteData(Long memberId, Long teamId, Long assetId) {
+        validateTeamMember(teamId, memberId);
+
+        TeamAsset asset = getActiveAssetByTeam(assetId, teamId);
+
+        String pdfDownloadUrl = storageService.generateDownloadUrl(asset.getStorageKey()).downloadUrl();
+
+        Optional<RoomAsset> latestRoomAsset = roomAssetRepository.findFirstByTeamAssetIdOrderByCreatedAtDesc(assetId);
+
+        List<TeamAssetNoteDataResponse.DrawingPageData> drawingData = latestRoomAsset
+                .map(roomAsset -> {
+                    List<DrawingSnapshot> snapshots = drawingSnapshotRepository.findByRoomAssetId(roomAsset.getId());
+                    return snapshots.stream()
+                            .collect(Collectors.toMap(
+                                    DrawingSnapshot::getPageIndex,
+                                    s -> s,
+                                    (a, b) -> a.getVersion() >= b.getVersion() ? a : b
+                            ))
+                            .values().stream()
+                            .sorted(Comparator.comparingInt(DrawingSnapshot::getPageIndex))
+                            .map(TeamAssetNoteDataResponse.DrawingPageData::from)
+                            .toList();
+                })
+                .orElse(List.of());
+
+        return TeamAssetNoteDataResponse.of(asset, pdfDownloadUrl, drawingData);
+    }
+
+    @Transactional
+    public DrawingSnapshotResponse saveDrawingData(Long memberId, Long teamId, Long assetId,
+                                                   TeamAssetDrawingUpdateRequest request) {
+        validateTeamMember(teamId, memberId);
+        getActiveAssetByTeam(assetId, teamId);
+
+        RoomAsset roomAsset = roomAssetRepository.findFirstByTeamAssetIdOrderByCreatedAtDesc(assetId)
+                .orElseThrow(() -> new TeamException(TeamErrorCode.NO_MEETING_HISTORY));
+
+        Member member = getMemberById(memberId);
+
+        long nextVersion = drawingSnapshotRepository
+                .findFirstByRoomAssetIdAndPageIndexOrderByVersionDesc(roomAsset.getId(), request.getPageIndex())
+                .map(s -> s.getVersion() + 1)
+                .orElse(1L);
+
+        DrawingSnapshot snapshot = DrawingSnapshot.create(
+                roomAsset.getRoom().getRoomUuid(),
+                roomAsset.getId(),
+                request.getPageIndex(),
+                nextVersion,
+                request.getSnapshotData(),
+                member.getId(),
+                member.getName()
+        );
+
+        return DrawingSnapshotResponse.from(drawingSnapshotRepository.save(snapshot));
     }
 
     // Helper methods

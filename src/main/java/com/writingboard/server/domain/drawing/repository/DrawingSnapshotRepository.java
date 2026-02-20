@@ -3,6 +3,7 @@ package com.writingboard.server.domain.drawing.repository;
 import com.writingboard.server.domain.drawing.document.DrawingSnapshot;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -19,6 +20,8 @@ public interface DrawingSnapshotRepository extends MongoRepository<DrawingSnapsh
             Long version
     );
 
+
+    List<DrawingSnapshot> findByRoomAssetId(Long roomAssetId);
 
     @Deprecated
     Optional<DrawingSnapshot> findFirstByRoomUuidAndPageIndexOrderByVersionDesc(

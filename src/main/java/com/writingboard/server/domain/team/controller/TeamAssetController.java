@@ -1,11 +1,14 @@
 package com.writingboard.server.domain.team.controller;
 
+import com.writingboard.server.domain.drawing.dto.response.DrawingSnapshotResponse;
 import com.writingboard.server.domain.team.dto.TeamAssetPreviewImageUpdateResponse;
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
 import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
+import com.writingboard.server.domain.team.dto.request.TeamAssetDrawingUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.AssetListResponse;
 import com.writingboard.server.domain.team.dto.response.AssetResponse;
+import com.writingboard.server.domain.team.dto.response.TeamAssetNoteDataResponse;
 import com.writingboard.server.domain.team.service.TeamAssetService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -105,6 +108,29 @@ public class TeamAssetController {
             @RequestBody @Valid AssetNewVersionRequest request) {
 
         AssetResponse response = teamAssetService.createNewVersion(memberId, teamId, assetId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{assetId}/note-data")
+    @Operation(summary = "팀 노트 데이터 조회", description = "팀 노트의 PDF 다운로드 URL과 회의에서 작성한 페이지별 필기 데이터를 함께 반환한다.")
+    public ResponseEntity<TeamAssetNoteDataResponse> getNoteData(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long assetId) {
+
+        TeamAssetNoteDataResponse response = teamAssetService.getNoteData(memberId, teamId, assetId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{assetId}/drawing-data")
+    @Operation(summary = "팀 노트 필기 데이터 저장", description = "회의 종료 후 팀 노트의 특정 페이지 필기 데이터를 저장한다.")
+    public ResponseEntity<DrawingSnapshotResponse> saveDrawingData(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long assetId,
+            @RequestBody @Valid TeamAssetDrawingUpdateRequest request) {
+
+        DrawingSnapshotResponse response = teamAssetService.saveDrawingData(memberId, teamId, assetId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
