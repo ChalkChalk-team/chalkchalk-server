@@ -61,8 +61,8 @@ public class TeamAsset extends BaseEntity {
     @Column(name = "total_pages")
     private Integer totalPages;
 
-    @Column(name = "thumbnail_image_url", length = 500)
-    private String thumbnailImageUrl;
+    @Column(name = "preview_image_url", length = 500)
+    private String previewImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
@@ -140,5 +140,13 @@ public class TeamAsset extends BaseEntity {
 
     public boolean isUploader(Long memberId) {
         return this.uploader.getId().equals(memberId);
+    }
+
+    public void updatePreviewImageUrl(String previewImageUrl) {
+        this.previewImageUrl = previewImageUrl;
+    }
+
+    public void clearPreviewImageUrl() {
+        this.previewImageUrl = null;
     }
 }

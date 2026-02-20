@@ -104,4 +104,8 @@ public class TeamAssetController {
         AssetResponse response = teamAssetService.createNewVersion(memberId, teamId, assetId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PostMapping("/{assetId}/restore")
+    @Operation(summary = "팀 노트 조회 시 노트 내용 미리 볼 수 있는 preview 이미지 업데이트", description = "팀 자료실 내에 저장된 특정 파일의 새 버전을 생성한다.")
+
 }
