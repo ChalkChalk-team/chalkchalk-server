@@ -1,5 +1,6 @@
 package com.writingboard.server.domain.team.controller;
 
+import com.writingboard.server.domain.team.dto.TeamAssetPreviewImageUpdateResponse;
 import com.writingboard.server.domain.team.dto.request.AssetCreateRequest;
 import com.writingboard.server.domain.team.dto.request.AssetNewVersionRequest;
 import com.writingboard.server.domain.team.dto.request.AssetUpdateRequest;
@@ -13,9 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -105,7 +108,15 @@ public class TeamAssetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/{assetId}/restore")
-    @Operation(summary = "팀 노트 조회 시 노트 내용 미리 볼 수 있는 preview 이미지 업데이트", description = "팀 자료실 내에 저장된 특정 파일의 새 버전을 생성한다.")
+    @PatchMapping(value = "/{assetId}/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "팀 노트 preview 이미지 업데이트", description = "회의실에서 필기 후 팀 노트 목록에 보여줄 thumbnail 이미지를 업데이트한다.")
+    public ResponseEntity<TeamAssetPreviewImageUpdateResponse> updatePreviewImage(
+            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long assetId,
+            @RequestPart("previewImage") MultipartFile previewImage) {
 
+        TeamAssetPreviewImageUpdateResponse response = teamAssetService.updatePreviewImage(memberId, teamId, assetId, previewImage);
+        return ResponseEntity.ok(response);
+    }
 }

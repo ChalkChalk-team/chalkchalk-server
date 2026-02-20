@@ -36,7 +36,8 @@ public enum TeamErrorCode {
     ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_401", "자산을 찾을 수 없습니다"),
     ASSET_MODIFY_FORBIDDEN(HttpStatus.FORBIDDEN, "TEAM_402", "자산을 수정/삭제할 권한이 없습니다"),
     ASSET_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TEAM_403", "이미 삭제된 자산입니다"),
-    INVALID_ASSET_TYPE(HttpStatus.BAD_REQUEST, "TEAM_404", "지원하지 않는 파일 타입입니다");
+    INVALID_ASSET_TYPE(HttpStatus.BAD_REQUEST, "TEAM_404", "지원하지 않는 파일 타입입니다"),
+    PREVIEW_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TEAM_405", "preview 이미지 업로드에 실패했습니다");
 
     private final HttpStatus status;
     private final String code;
