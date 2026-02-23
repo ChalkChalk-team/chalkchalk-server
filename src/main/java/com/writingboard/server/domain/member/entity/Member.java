@@ -1,5 +1,6 @@
 package com.writingboard.server.domain.member.entity;
 
+import com.writingboard.server.domain.member.entity.enums.AuthProvider;
 import com.writingboard.server.domain.member.entity.enums.MemberStatus;
 import com.writingboard.server.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -33,6 +34,10 @@ public class Member extends BaseEntity {
     private String providerId; // Guest: deviceId, OAuth: provider user ID
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "provider", columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'GUEST'")
+    private AuthProvider provider;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
     private MemberStatus status = MemberStatus.ACTIVE;
 
@@ -44,20 +49,22 @@ public class Member extends BaseEntity {
         member.email = "guest-" + deviceId.substring(0, Math.min(10, deviceId.length())) + "@temp.local";
         member.name = name != null && !name.isBlank() ? name : "Guest-" + deviceId.substring(0, 6).toUpperCase();
         member.providerId = deviceId;
+        member.provider = AuthProvider.GUEST;
         member.profileImageUrl = null;
         member.status = MemberStatus.ACTIVE;
         return member;
     }
 
     /**
-     * OAuth 사용자 생성
+     * 소셜 로그인 사용자 생성
      */
-    public static Member create(String email, String name, String providerId, String profileImageUrl) {
+    public static Member create(String email, String name, String providerId, String profileImageUrl, AuthProvider provider) {
         Member member = new Member();
         member.email = email;
         member.name = name;
         member.providerId = providerId;
         member.profileImageUrl = profileImageUrl;
+        member.provider = provider;
         member.status = MemberStatus.ACTIVE;
         return member;
     }
