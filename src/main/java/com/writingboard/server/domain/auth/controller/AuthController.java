@@ -2,6 +2,7 @@ package com.writingboard.server.domain.auth.controller;
 
 import com.writingboard.server.domain.auth.dto.request.GuestLoginRequest;
 import com.writingboard.server.domain.auth.dto.request.RefreshTokenRequest;
+import com.writingboard.server.domain.auth.dto.request.SocialLoginRequest;
 import com.writingboard.server.domain.auth.dto.response.TokenResponse;
 import com.writingboard.server.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,16 @@ public class AuthController {
     public ResponseEntity<TokenResponse> guestLogin(@RequestBody @Valid GuestLoginRequest request) {
         TokenResponse response = authService.guestLogin(request.getDeviceId(), request.getName());
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
+     * 소셜 로그인 - idToken 검증 후 JWT 발급
+     */
+    @Operation(summary = "소셜 로그인", description = "iOS 앱에서 획득한 idToken을 검증하여 JWT 토큰 발급 (provider: GOOGLE, APPLE)")
+    @PostMapping("/social-login")
+    public ResponseEntity<TokenResponse> socialLogin(@RequestBody @Valid SocialLoginRequest request) {
+        TokenResponse response = authService.socialLogin(request.getProvider(), request.getIdToken());
+        return ResponseEntity.ok(response);
     }
 
     /**
