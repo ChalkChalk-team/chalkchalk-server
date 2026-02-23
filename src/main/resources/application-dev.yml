@@ -34,6 +34,9 @@ jwt:
   access-expiration: 7200000   # 2hours (ms 단위)
   refresh-expiration: 604800000 # 7일 (ms 단위)
 
+google:
+  client-id: ${GOOGLE_CLIENT_ID}
+
 cloud:
   r2:
     credentials:
