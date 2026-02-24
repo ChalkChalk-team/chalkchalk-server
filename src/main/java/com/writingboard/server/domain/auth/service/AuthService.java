@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -24,6 +25,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final List<SocialTokenVerifier> socialTokenVerifiers;
+    private final Map<AuthProvider, SocialTokenVerifier> tokenVerifierMap;
 
     /**
      * 게스트 로그인 - deviceId로 회원 조회 또는 생성
