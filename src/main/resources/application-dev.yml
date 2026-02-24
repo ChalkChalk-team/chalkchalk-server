@@ -34,6 +34,20 @@ jwt:
   access-expiration: 7200000   # 2hours (ms 단위)
   refresh-expiration: 604800000 # 7일 (ms 단위)
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name:chalkchalk-server}
+
 cloud:
   r2:
     credentials:

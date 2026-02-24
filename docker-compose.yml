@@ -41,3 +41,75 @@ services:
       MONGO_INITDB_DATABASE: writing_db
     volumes:
       - ./data/mongo:/data/db
+
+  # 4. mysqld_exporter - MySQL 메트릭 수집
+  mysqld-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: writing-board-mysqld-exporter
+    restart: always
+    ports:
+      - "9104:9104"
+    environment:
+      - DATA_SOURCE_NAME=${DB_USER}:${DB_PASSWORD}@(db:3306)/
+    depends_on:
+      - db
+
+  # 5. redis_exporter - Redis 메트릭 수집
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: writing-board-redis-exporter
+    restart: always
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+
+  # 6. mongodb_exporter - MongoDB 메트릭 수집
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    container_name: writing-board-mongodb-exporter
+    restart: always
+    ports:
+      - "9216:9216"
+    command:
+      - '--mongodb.uri=mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/admin'
+      - '--collect-all'
+    depends_on:
+      - mongo
+
+  # 7. Prometheus - 메트릭 수집 및 저장
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: writing-board-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    depends_on:
+      - mysqld-exporter
+      - redis-exporter
+      - mongodb-exporter
+
+  # 8. Grafana - 메트릭 시각화
+  grafana:
+    image: grafana/grafana:latest
+    container_name: writing-board-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    depends_on:
+      - prometheus

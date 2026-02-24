@@ -47,7 +47,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/static/**",
                                 "/error",
-                                "/ws-stomp/**"
+                                "/ws-stomp/**",
+                                "/actuator/health",
+                                "/actuator/prometheus"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
