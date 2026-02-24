@@ -49,6 +49,10 @@ dependencies {
     // Google Sign In
     implementation 'com.google.api-client:google-api-client:2.7.0'
 
+    // Monitoring
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     // R2
     implementation 'software.amazon.awssdk:s3:2.25.27'
     implementation 'software.amazon.awssdk:netty-nio-client:2.25.27'
