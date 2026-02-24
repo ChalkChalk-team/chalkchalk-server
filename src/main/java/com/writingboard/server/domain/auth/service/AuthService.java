@@ -24,7 +24,6 @@ public class AuthService {
 
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
-    private final List<SocialTokenVerifier> socialTokenVerifiers;
     private final Map<AuthProvider, SocialTokenVerifier> tokenVerifierMap;
 
     /**
@@ -53,10 +52,7 @@ public class AuthService {
     public TokenResponse socialLogin(AuthProvider provider, String idToken) {
         log.info("Social login attempt - provider: {}", provider);
 
-        SocialTokenVerifier verifier = socialTokenVerifiers.stream()
-                .filter(v -> v.getProvider() == provider)
-                .findFirst()
-                .orElseThrow(() -> new AuthException(AuthErrorCode.UNSUPPORTED_PROVIDER));
+        SocialTokenVerifier verifier = tokenVerifierMap.get(provider);
 
         SocialUserInfo userInfo = verifier.verify(idToken);
 
