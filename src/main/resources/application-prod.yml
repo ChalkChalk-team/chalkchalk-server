@@ -6,6 +6,8 @@ spring:
       password: ${REDIS_PASSWORD}
     mongodb:
       uri: ${MONGO_URI}
+  application:
+    name: writing-board-server
 
   datasource:
     url: ${DB_URL}
@@ -41,6 +43,19 @@ sentry:
   send-default-pii: true
   exception-resolver-order: -2147483648
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name:chalkchalk-server}
 
 cloud:
   r2:
