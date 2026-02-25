@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: writing-board-server
   data:
     redis:
       host: localhost
