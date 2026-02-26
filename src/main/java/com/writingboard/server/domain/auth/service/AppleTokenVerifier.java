@@ -12,19 +12,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
 
 import java.math.BigInteger;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.time.Duration;
 import java.time.Instant;
@@ -35,6 +31,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class AppleTokenVerifier implements SocialTokenVerifier {
 
     private static final String APPLE_ISSUER = "https://appleid.apple.com";
@@ -44,22 +41,20 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
     @Value("${apple.client-id}")
     private String clientId;
 
+    private final RestClient restClient;
+    private final ObjectMapper objectMapper;
+
     private final Object cacheLock = new Object();
     private final Base64.Decoder urlDecoder = Base64.getUrlDecoder();
 
-    private HttpClient httpClient;
-    private ObjectMapper objectMapper;
-    private Map<String, PublicKey> cachedPublicKeys;
-    private Instant cacheExpiresAt;
+    private volatile JwksCache jwksCache = JwksCache.EMPTY;
 
-    @PostConstruct
-    public void init() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
-                .build();
-        this.objectMapper = new ObjectMapper();
-        this.cachedPublicKeys = Map.of();
-        this.cacheExpiresAt = Instant.EPOCH;
+    private record JwksCache(Map<String, PublicKey> keys, Instant expiresAt) {
+        static final JwksCache EMPTY = new JwksCache(Map.of(), Instant.EPOCH);
+
+        boolean isValid(String kid) {
+            return Instant.now().isBefore(expiresAt) && keys.containsKey(kid);
+        }
     }
 
     @Override
@@ -78,8 +73,6 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
             String socialId = claims.getSubject();
             String email = claims.get("email", String.class);
 
-            log.info("Apple token verified - socialId: {}", socialId);
-
             return SocialUserInfo.builder()
                     .socialId(socialId)
                     .email(email)
@@ -90,7 +83,7 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
             throw e;
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException |
                  IllegalArgumentException e) {
-            log.warn("Apple token verification failed: {}", e.getMessage());
+            log.warn("Invalid token: {}", e.getMessage());
             throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
         } catch (Exception e) {
             log.warn("Apple token verification failed: {}", e.getMessage());
@@ -115,7 +108,7 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
             String kid = header.path("kid").asText(null);
             String alg = header.path("alg").asText(null);
 
-            if (kid == null || kid.isBlank() || alg == null || !"RS256".equals(alg)) {
+            if (kid == null || kid.isBlank() || !"RS256".equals(alg)) {
                 throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
             }
 
@@ -128,24 +121,21 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
     }
 
     private PublicKey getPublicKey(String kid) {
-        Instant now = Instant.now();
-        Map<String, PublicKey> currentKeys = cachedPublicKeys;
-        if (now.isBefore(cacheExpiresAt) && currentKeys.containsKey(kid)) {
-            return currentKeys.get(kid);
+        if (jwksCache.isValid(kid)) {
+            return jwksCache.keys().get(kid);
         }
 
         synchronized (cacheLock) {
-            now = Instant.now();
-            if (now.isBefore(cacheExpiresAt) && cachedPublicKeys.containsKey(kid)) {
-                return cachedPublicKeys.get(kid);
+            if (jwksCache.isValid(kid)) {
+                return jwksCache.keys().get(kid);
             }
 
             refreshPublicKeys();
-            PublicKey publicKey = cachedPublicKeys.get(kid);
+            PublicKey publicKey = jwksCache.keys().get(kid);
 
             if (publicKey == null) {
                 refreshPublicKeys();
-                publicKey = cachedPublicKeys.get(kid);
+                publicKey = jwksCache.keys().get(kid);
             }
 
             if (publicKey == null) {
@@ -184,8 +174,7 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
                 throw new IllegalStateException("Apple JWKS is empty");
             }
 
-            cachedPublicKeys = Map.copyOf(parsedKeys);
-            cacheExpiresAt = Instant.now().plus(JWKS_CACHE_TTL);
+            jwksCache = new JwksCache(Map.copyOf(parsedKeys), Instant.now().plus(JWKS_CACHE_TTL));
         } catch (AuthException e) {
             throw e;
         } catch (Exception e) {
@@ -193,19 +182,11 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
         }
     }
 
-    protected String fetchAppleJwksJson() throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(APPLE_JWKS_URL))
-                .timeout(Duration.ofSeconds(3))
-                .GET()
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
-            throw new IllegalStateException("Apple JWKS request failed");
-        }
-
-        return response.body();
+    protected String fetchAppleJwksJson() {
+        return restClient.get()
+                .uri(APPLE_JWKS_URL)
+                .retrieve()
+                .body(String.class);
     }
 
     private PublicKey createRsaPublicKey(String n, String e) throws Exception {
@@ -216,22 +197,15 @@ public class AppleTokenVerifier implements SocialTokenVerifier {
     }
 
     private void validateClaims(Claims claims) {
-        String issuer = claims.getIssuer();
-        if (!APPLE_ISSUER.equals(issuer)) {
+        if (!APPLE_ISSUER.equals(claims.getIssuer())) {
             throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
         }
 
-        Object audience = claims.get("aud");
-        if (!isAudienceValid(audience)) {
+        if (!isAudienceValid(claims.get("aud"))) {
             throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
         }
 
-        if (claims.getExpiration() == null || claims.getExpiration().before(new java.util.Date())) {
-            throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
-        }
-
-        String subject = claims.getSubject();
-        if (subject == null || subject.isBlank()) {
+        if (claims.getSubject() == null || claims.getSubject().isBlank()) {
             throw new AuthException(AuthErrorCode.INVALID_ID_TOKEN);
         }
     }
