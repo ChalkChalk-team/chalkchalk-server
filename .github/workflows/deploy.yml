@@ -59,6 +59,7 @@ jobs:
             R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}
             
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
             GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}
             EOF
             
