@@ -1,7 +1,6 @@
 package com.writingboard.server.global.websocket;
 
 import com.writingboard.server.domain.auth.jwt.JwtProvider;
-import com.writingboard.server.domain.meeting.entity.Room;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantState;
 import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
 import com.writingboard.server.domain.meeting.repository.RoomRepository;
@@ -34,6 +33,19 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 
         StompCommand command = accessor.getCommand();
 
+        if (command == StompCommand.CONNECT
+                || command == StompCommand.SUBSCRIBE
+                || command == StompCommand.SEND
+                || command == StompCommand.DISCONNECT) {
+
+            Long memberId = getMemberId(accessor);
+            log.debug("[STOMP] cmd={}, sessionId={}, memberId={}, dest={}",
+                    command,
+                    accessor.getSessionId(),
+                    memberId,
+                    accessor.getDestination());
+        }
+
         if (StompCommand.CONNECT.equals(command)) {
             handleConnect(accessor);
         }
@@ -59,7 +71,6 @@ public class StompChannelInterceptor implements ChannelInterceptor {
                 throw new MessagingException("Invalid JWT token");
             }
         } else {
-            // 핸드셰이크에서 이미 검증된 경우 세션 속성에서 멤버 아이디 가져옴
             Object memberIdAttr = accessor.getSessionAttributes() != null
                     ? accessor.getSessionAttributes().get("memberId")
                     : null;
@@ -83,16 +94,17 @@ public class StompChannelInterceptor implements ChannelInterceptor {
             }
 
             if (!isParticipant(roomUuid, memberId)) { // 회의실 참여자만 메세지 보내고 받는거 허용
-                log.warn("SUBSCRIBE 거부: memberId={}, roomUuid={}", memberId, roomUuid);
+                log.warn("SUBSCRIBE 거부: memberId={}, roomUuid={}, dest={}",
+                        memberId, roomUuid, destination);
                 throw new MessagingException("해당 회의실의 참여자가 아닙니다.");
             }
 
-            log.debug("SUBSCRIBE 허용: memberId={}, roomUuid={}", memberId, roomUuid);
+            log.debug("SUBSCRIBE 허용: memberId={}, roomUuid={}, dest={}",
+                    memberId, roomUuid, destination);
         }
     }
 
     private String extractRoomUuid(String destination) {
-        // /topic/room/{roomUuid} 또는 /topic/room/{roomUuid}/system
         String[] parts = destination.split("/");
         return parts.length >= 4 ? parts[3] : null;
     }
