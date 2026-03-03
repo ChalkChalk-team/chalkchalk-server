@@ -54,13 +54,15 @@ public class TeamResponse {
     @Builder
     public static class CreatorInfo {
         private Long memberId;
+        private String userId;
         private String name;
         private String email;
 
         public static CreatorInfo of(Member member) {
             return CreatorInfo.builder()
                     .memberId(member.getId())
-                    .name(member.getName())
+                    .userId(member.getUserId())
+                    .name(member.getDisplayName())
                     .email(member.getEmail())
                     .build();
         }

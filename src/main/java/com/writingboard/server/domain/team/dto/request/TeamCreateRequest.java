@@ -18,5 +18,5 @@ public class TeamCreateRequest {
 
     private List<Long> memberIds;
 
-    private List<String> memberNames;
+    private List<String> memberUserIds;
 }

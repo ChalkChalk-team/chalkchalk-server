@@ -12,6 +12,7 @@ public class TeamMemberResponse {
 
     private Long teamMemberId;
     private Long memberId;
+    private String userId;
     private String name;
     private String email;
     private String profileImageUrl;
@@ -23,7 +24,8 @@ public class TeamMemberResponse {
         return TeamMemberResponse.builder()
                 .teamMemberId(teamMember.getId())
                 .memberId(teamMember.getMember().getId())
-                .name(teamMember.getMember().getName())
+                .userId(teamMember.getMember().getUserId())
+                .name(teamMember.getMember().getDisplayName())
                 .email(teamMember.getMember().getEmail())
                 .profileImageUrl(teamMember.getMember().getProfileImageUrl())
                 .role(teamMember.getRole().name())

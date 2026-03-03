@@ -214,7 +214,7 @@ public class TeamAssetService {
                 nextVersion,
                 request.getSnapshotData(),
                 member.getId(),
-                member.getName()
+                member.getDisplayName()
         );
 
         return DrawingSnapshotResponse.from(drawingSnapshotRepository.save(snapshot));

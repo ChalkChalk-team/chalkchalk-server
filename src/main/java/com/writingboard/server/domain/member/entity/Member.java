@@ -27,6 +27,12 @@ public class Member extends BaseEntity {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
+    @Column(name = "user_id", length = 20, unique = true)
+    private String userId;
+
+    @Column(name = "nickname", length = 30)
+    private String nickname;
+
     @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl; // 지금은 안 씀
 
@@ -58,25 +64,37 @@ public class Member extends BaseEntity {
     /**
      * 소셜 로그인 사용자 생성
      */
-    public static Member create(String email, String name, String providerId, String profileImageUrl, AuthProvider provider) {
+    public static Member create(String email, String name, String providerId, String profileImageUrl, AuthProvider provider, String userId, String nickname) {
         Member member = new Member();
         member.email = email;
         member.name = name;
         member.providerId = providerId;
         member.profileImageUrl = profileImageUrl;
         member.provider = provider;
+        member.userId = userId;
+        member.nickname = nickname;
         member.status = MemberStatus.ACTIVE;
         return member;
     }
 
 
-    public void updateProfile(String name, String profileImageUrl) {
+    public void updateProfile(String name, String profileImageUrl, String userId, String nickname) {
         if (name != null && !name.isBlank()) {
             this.name = name;
         }
         if (profileImageUrl != null && !profileImageUrl.isBlank()) {
             this.profileImageUrl = profileImageUrl;
         }
+        if (userId != null && !userId.isBlank()) {
+            this.userId = userId;
+        }
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
+        }
+    }
+
+    public String getDisplayName() {
+        return (nickname != null && !nickname.isBlank()) ? nickname : name;
     }
 
     public void withdraw() {

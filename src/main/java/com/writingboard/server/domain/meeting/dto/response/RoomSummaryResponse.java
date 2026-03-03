@@ -29,7 +29,7 @@ public class RoomSummaryResponse {
                 .title(room.getTitle())
                 .status(room.getStatus().name())
                 .hasPassword(room.getPasswordHash() != null)
-                .hostName(room.getHost().getName())
+                .hostName(room.getHost().getDisplayName())
                 .participantCount(activeCount)
                 .createdAt(room.getCreatedAt())
                 .build();

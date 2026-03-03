@@ -32,7 +32,13 @@ public class MemberService {
     public MemberProfileResponse updateProfile(Long memberId, MemberUpdateRequest request) {
         Member member = getMemberById(memberId);
 
-        member.updateProfile(request.getName(), request.getProfileImageUrl());
+        if (request.getUserId() != null && !request.getUserId().isBlank()) {
+            if (!request.getUserId().equals(member.getUserId()) && memberRepository.existsByUserId(request.getUserId())) {
+                throw new MemberException(ErrorCode.DUPLICATE_USER_ID);
+            }
+        }
+
+        member.updateProfile(request.getName(), request.getProfileImageUrl(), request.getUserId(), request.getNickname());
 
         return MemberProfileResponse.of(member);
     }

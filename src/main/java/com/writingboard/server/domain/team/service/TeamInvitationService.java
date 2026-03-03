@@ -67,8 +67,8 @@ public class TeamInvitationService {
         Member invitee = null;
         if (request.getMemberId() != null) {
             invitee = getMemberById(request.getMemberId());
-        } else if (request.getMemberName() != null && !request.getMemberName().isBlank()) {
-            invitee = memberRepository.findByName(request.getMemberName())
+        } else if (request.getMemberUserId() != null && !request.getMemberUserId().isBlank()) {
+            invitee = memberRepository.findByUserId(request.getMemberUserId())
                     .orElseThrow(() -> new TeamException(TeamErrorCode.MEMBER_NOT_FOUND));
         } else {
             throw new TeamException(TeamErrorCode.MEMBER_NOT_FOUND);

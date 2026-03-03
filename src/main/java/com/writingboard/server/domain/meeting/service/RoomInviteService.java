@@ -43,7 +43,7 @@ public class RoomInviteService {
         validateParticipant(room, memberId);
 
         Member issuer = getMemberById(memberId);
-        Member usedBy = getMemberByUserName(request.getName());
+        Member usedBy = getMemberByUserId(request.getUserId());
         int expireMinutes = request.getExpiresInMinutes() != null ? request.getExpiresInMinutes() : DEFAULT_EXPIRE_MINUTES;
 
         String token = UUID.randomUUID().toString();
@@ -69,8 +69,8 @@ public class RoomInviteService {
                 .orElseThrow(() -> new MeetingException(MeetingErrorCode.MEMBER_NOT_FOUND));
     }
 
-    private Member getMemberByUserName(String username) {
-        return memberRepository.findByName(username)
+    private Member getMemberByUserId(String userId) {
+        return memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new MeetingException(MeetingErrorCode.MEMBER_NOT_FOUND));
     }
 

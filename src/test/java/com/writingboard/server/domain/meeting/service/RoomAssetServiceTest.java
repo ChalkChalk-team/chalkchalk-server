@@ -70,6 +70,7 @@ class RoomAssetServiceTest {
         member = mock(Member.class);
         lenient().when(member.getId()).thenReturn(MEMBER_ID);
         lenient().when(member.getName()).thenReturn("테스터");
+        lenient().when(member.getDisplayName()).thenReturn("테스터");
 
         team = mock(Team.class);
         lenient().when(team.getId()).thenReturn(1L);

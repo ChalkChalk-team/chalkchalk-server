@@ -50,7 +50,7 @@ public class VoiceService {
         VoiceSignalDto signalDto = VoiceSignalDto.of(
                 roomUuid,
                 sender.getId(),
-                sender.getName(),
+                sender.getDisplayName(),
                 request.getSignalType(),
                 request.getData()
         );

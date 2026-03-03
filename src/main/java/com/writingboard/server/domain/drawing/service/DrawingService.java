@@ -70,7 +70,7 @@ public class DrawingService {
                 roomUuid,
                 request.getRoomAssetId(),
                 sender.getId(),
-                sender.getName(),
+                sender.getDisplayName(),
                 request.getType(),
                 request.getPageIndex(),
                 request.getStrokeId(),

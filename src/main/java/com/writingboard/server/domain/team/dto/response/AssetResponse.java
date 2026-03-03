@@ -56,7 +56,7 @@ public class AssetResponse {
         public static UploaderInfo of(TeamAsset asset) {
             return UploaderInfo.builder()
                     .memberId(asset.getUploader().getId())
-                    .name(asset.getUploader().getName())
+                    .name(asset.getUploader().getDisplayName())
                     .build();
         }
     }

@@ -13,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.writingboard.server.domain.member.exception.ErrorCode;
+import com.writingboard.server.domain.member.exception.MemberException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -49,27 +52,42 @@ public class AuthService {
      * 소셜 로그인 - idToken 검증 후 회원 조회 또는 생성
      */
     @Transactional
-    public TokenResponse socialLogin(AuthProvider provider, String idToken) {
+    public TokenResponse socialLogin(AuthProvider provider, String idToken, String userId, String nickname) {
         log.info("Social login attempt - provider: {}", provider);
 
         SocialTokenVerifier verifier = tokenVerifierMap.get(provider);
 
         SocialUserInfo userInfo = verifier.verify(idToken);
 
-        Member member = memberRepository.findByProviderIdAndProvider(userInfo.getSocialId(), provider)
-                .orElseGet(() -> {
-                    log.info("Creating new social member - provider: {}, socialId: {}", provider, userInfo.getSocialId());
-                    String email = userInfo.getEmail() != null
-                            ? userInfo.getEmail()
-                            : provider.name().toLowerCase() + "-" + userInfo.getSocialId() + "@temp.local";
-                    String name = userInfo.getName() != null ? userInfo.getName() : provider.name() + "-User";
-                    Member newMember = Member.create(email, name, userInfo.getSocialId(), null, provider);
-                    return memberRepository.save(newMember);
-                });
+        Member existingMember = memberRepository.findByProviderIdAndProvider(userInfo.getSocialId(), provider)
+                .orElse(null);
 
-        log.info("Social login successful - provider: {}, memberId: {}", provider, member.getId());
+        if (existingMember != null) {
+            log.info("Social login successful - provider: {}, memberId: {}", provider, existingMember.getId());
+            return generateTokenResponse(existingMember);
+        }
 
-        return generateTokenResponse(member);
+        // 신규 회원: userId 필수
+        if (userId == null || userId.isBlank()) {
+            throw new AuthException(AuthErrorCode.REGISTRATION_REQUIRED);
+        }
+
+        // userId 중복 검증
+        if (memberRepository.existsByUserId(userId)) {
+            throw new MemberException(ErrorCode.DUPLICATE_USER_ID);
+        }
+
+        log.info("Creating new social member - provider: {}, socialId: {}", provider, userInfo.getSocialId());
+        String email = userInfo.getEmail() != null
+                ? userInfo.getEmail()
+                : provider.name().toLowerCase() + "-" + userInfo.getSocialId() + "@temp.local";
+        String name = userInfo.getName() != null ? userInfo.getName() : provider.name() + "-User";
+        Member newMember = Member.create(email, name, userInfo.getSocialId(), null, provider, userId, nickname);
+        memberRepository.save(newMember);
+
+        log.info("Social login successful - provider: {}, memberId: {}", provider, newMember.getId());
+
+        return generateTokenResponse(newMember);
     }
 
     /**

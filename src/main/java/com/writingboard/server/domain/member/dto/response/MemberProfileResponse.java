@@ -11,6 +11,9 @@ public class MemberProfileResponse {
     private Long memberId;
     private String email;
     private String name;
+    private String userId;
+    private String nickname;
+    private String displayName;
     private String profileImageUrl;
 
     public static MemberProfileResponse of(Member member) {
@@ -18,7 +21,10 @@ public class MemberProfileResponse {
                 .memberId(member.getId())
                 .email(member.getEmail())
                 .name(member.getName())
-                .profileImageUrl(member.getProfileImageUrl()) // 엔티티에서 꺼내서 넣음
+                .userId(member.getUserId())
+                .nickname(member.getNickname())
+                .displayName(member.getDisplayName())
+                .profileImageUrl(member.getProfileImageUrl())
                 .build();
     }
 }

@@ -39,7 +39,7 @@ public class AuthController {
     @Operation(summary = "소셜 로그인", description = "iOS 앱에서 획득한 idToken을 검증하여 JWT 토큰 발급 (provider: GOOGLE, APPLE)")
     @PostMapping("/social-login")
     public ResponseEntity<TokenResponse> socialLogin(@RequestBody @Valid SocialLoginRequest request) {
-        TokenResponse response = authService.socialLogin(request.getProvider(), request.getIdToken());
+        TokenResponse response = authService.socialLogin(request.getProvider(), request.getIdToken(), request.getUserId(), request.getNickname());
         return ResponseEntity.ok(response);
     }
 

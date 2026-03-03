@@ -128,7 +128,7 @@ public class DrawingSnapshotService {
                 .set("version", lastIncludedVersion)
                 .set("snapshotData", snapshotData)
                 .set("createdBy", member.getId())
-                .set("createdByName", member.getName())
+                .set("createdByName", member.getDisplayName())
                 .set("createdAt", Instant.now());
 
         FindAndModifyOptions options = FindAndModifyOptions.options()

@@ -41,13 +41,15 @@ public class RoomDetailResponse {
     @Builder
     public static class HostInfo {
         private Long id;
+        private String userId;
         private String name;
         private String email;
 
         public static HostInfo of(Member member) {
             return HostInfo.builder()
                     .id(member.getId())
-                    .name(member.getName())
+                    .userId(member.getUserId())
+                    .name(member.getDisplayName())
                     .email(member.getEmail())
                     .build();
         }
@@ -57,6 +59,7 @@ public class RoomDetailResponse {
     @Builder
     public static class ParticipantInfo {
         private Long memberId;
+        private String userId;
         private String name;
         private String role;
         private Instant joinedAt;
@@ -64,7 +67,8 @@ public class RoomDetailResponse {
         public static ParticipantInfo of(RoomParticipant participant) {
             return ParticipantInfo.builder()
                     .memberId(participant.getMember().getId())
-                    .name(participant.getMember().getName())
+                    .userId(participant.getMember().getUserId())
+                    .name(participant.getMember().getDisplayName())
                     .role(participant.getRole().name())
                     .joinedAt(participant.getJoinedAt())
                     .build();

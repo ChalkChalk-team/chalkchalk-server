@@ -64,17 +64,17 @@ public class TeamService {
             }
         }
 
-        // memberNames로 초대된 멤버들 추가
-        if (request.getMemberNames() != null && !request.getMemberNames().isEmpty()) {
-            for (String memberName : request.getMemberNames()) {
-                memberRepository.findByName(memberName).ifPresent(invitedMember -> {
-                    if (!invitedMember.getId().equals(memberId) &&
-                            teamMembers.stream().noneMatch(tm -> tm.getMember().getId().equals(invitedMember.getId()))) {
-                        TeamMember tm = TeamMember.createMember(team, invitedMember);
-                        teamMemberRepository.save(tm);
-                        teamMembers.add(tm);
-                    }
-                });
+        // memberUserIds로 초대된 멤버들 추가
+        if (request.getMemberUserIds() != null && !request.getMemberUserIds().isEmpty()) {
+            for (String memberUserId : request.getMemberUserIds()) {
+                Member invitedMember = memberRepository.findByUserId(memberUserId)
+                        .orElseThrow(() -> new TeamException(TeamErrorCode.MEMBER_NOT_FOUND));
+                if (!invitedMember.getId().equals(memberId) &&
+                        teamMembers.stream().noneMatch(tm -> tm.getMember().getId().equals(invitedMember.getId()))) {
+                    TeamMember tm = TeamMember.createMember(team, invitedMember);
+                    teamMemberRepository.save(tm);
+                    teamMembers.add(tm);
+                }
             }
         }
 

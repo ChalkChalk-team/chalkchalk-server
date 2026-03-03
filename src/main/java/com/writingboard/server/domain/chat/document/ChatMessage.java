@@ -49,7 +49,7 @@ public class ChatMessage {
         return new ChatMessage(
                 roomUuid,
                 sender.getId(),
-                sender.getName(),
+                sender.getDisplayName(),
                 sender.getProfileImageUrl(),
                 content,
                 MessageType.TEXT

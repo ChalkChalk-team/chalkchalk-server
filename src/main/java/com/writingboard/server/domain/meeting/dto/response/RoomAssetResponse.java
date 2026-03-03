@@ -33,7 +33,7 @@ public class RoomAssetResponse {
                 .isActive(roomAsset.getIsActive())
                 .savePolicy(roomAsset.getSavePolicy())
                 .addedById(roomAsset.getAddedBy().getId())
-                .addedByName(roomAsset.getAddedBy().getName())
+                .addedByName(roomAsset.getAddedBy().getDisplayName())
                 .createdAt(roomAsset.getCreatedAt());
 
         if (roomAsset.getTeamAsset() != null) {

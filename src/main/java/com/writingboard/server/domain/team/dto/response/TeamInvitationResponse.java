@@ -15,6 +15,7 @@ public class TeamInvitationResponse {
     private String teamName;
     private String inviterName;
     private String inviteeName;
+    private String inviteeUserId;
     private String type;
     private String status;
     private Instant expiresAt;
@@ -25,8 +26,9 @@ public class TeamInvitationResponse {
                 .invitationId(invitation.getId())
                 .teamId(invitation.getTeam().getId())
                 .teamName(invitation.getTeam().getName())
-                .inviterName(invitation.getInviter().getName())
-                .inviteeName(invitation.getInvitee() != null ? invitation.getInvitee().getName() : null)
+                .inviterName(invitation.getInviter().getDisplayName())
+                .inviteeName(invitation.getInvitee() != null ? invitation.getInvitee().getDisplayName() : null)
+                .inviteeUserId(invitation.getInvitee() != null ? invitation.getInvitee().getUserId() : null)
                 .type(invitation.getType().name())
                 .status(invitation.getStatus().name())
                 .expiresAt(invitation.getExpiresAt())

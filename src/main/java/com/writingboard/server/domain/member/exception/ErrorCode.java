@@ -13,6 +13,7 @@ public enum ErrorCode {
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "MEMBER_002", "이미 탈퇴한 회원입니다."),
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "MEMBER_003", "잘못된 입력값입니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "MEMBER_004", "이미 존재하는 이메일입니다."),
+    DUPLICATE_USER_ID(HttpStatus.CONFLICT, "MEMBER_005", "이미 사용 중인 사용자 ID입니다."),
 
     // Auth 관련 (AUTH_XXX) 일단 여기 나중에 옮길거
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "인증이 필요합니다."),

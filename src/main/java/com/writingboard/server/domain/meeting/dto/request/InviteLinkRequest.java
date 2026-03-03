@@ -2,9 +2,9 @@ package com.writingboard.server.domain.meeting.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-import lombok.NonNull;
 
 @Data
 public class InviteLinkRequest {
@@ -13,7 +13,7 @@ public class InviteLinkRequest {
     @Max(value = 60, message = "최대 60분까지")
     private Integer expiresInMinutes = 5;
 
-    @NonNull
-    @Size(max = 50, message = "이름은 최대 50자까지 가능합니다.")
-    private String name;
+    @NotBlank(message = "사용자 ID는 필수입니다.")
+    @Pattern(regexp = "^[a-zA-Z0-9_]{3,20}$", message = "사용자 ID는 영문, 숫자, 밑줄만 사용 가능하며 3~20자여야 합니다.")
+    private String userId;
 }

@@ -49,7 +49,7 @@ public class CanvasFollowService {
 
         FollowStateDto state = FollowStateDto.of(
                 memberId,
-                participant.getMember().getName(),
+                participant.getMember().getDisplayName(),
                 roomAssetId,
                 pageIndex
         );
@@ -132,7 +132,7 @@ public class CanvasFollowService {
 
                     return ParticipantViewingResponse.builder()
                             .memberId(participantMemberId)
-                            .memberName(participant.getMember().getName())
+                            .memberName(participant.getMember().getDisplayName())
                             .role(participant.getRole())
                             .roomAssetId(roomAssetId)
                             .assetName(assetName)
