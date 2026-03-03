@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "member")
 @Getter
@@ -54,6 +56,7 @@ public class Member extends BaseEntity {
         Member member = new Member();
         member.email = "guest-" + deviceId.substring(0, Math.min(10, deviceId.length())) + "@temp.local";
         member.name = name != null && !name.isBlank() ? name : "Guest-" + deviceId.substring(0, 6).toUpperCase();
+        member.userId = "guest_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
         member.providerId = deviceId;
         member.provider = AuthProvider.GUEST;
         member.profileImageUrl = null;

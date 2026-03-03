@@ -15,6 +15,7 @@ public class ChatMessageDto {
     private String id;
     private String roomUuid;
     private Long senderId;
+    private String senderUserId;
     private String senderName;
     private String senderProfileImage;
     private String content;
@@ -22,12 +23,13 @@ public class ChatMessageDto {
     private Instant timestamp;
 
     @Builder
-    public ChatMessageDto(String id, String roomUuid, Long senderId, String senderName,
-                          String senderProfileImage, String content,
+    public ChatMessageDto(String id, String roomUuid, Long senderId, String senderUserId,
+                          String senderName, String senderProfileImage, String content,
                           MessageType messageType, Instant timestamp) {
         this.id = id;
         this.roomUuid = roomUuid;
         this.senderId = senderId;
+        this.senderUserId = senderUserId;
         this.senderName = senderName;
         this.senderProfileImage = senderProfileImage;
         this.content = content;
@@ -40,6 +42,7 @@ public class ChatMessageDto {
                 .id(chatMessage.getId())
                 .roomUuid(chatMessage.getRoomUuid())
                 .senderId(chatMessage.getSenderId())
+                .senderUserId(chatMessage.getSenderUserId())
                 .senderName(chatMessage.getSenderName())
                 .senderProfileImage(chatMessage.getSenderProfileImage())
                 .content(chatMessage.getContent())

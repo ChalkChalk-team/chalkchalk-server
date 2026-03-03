@@ -25,6 +25,7 @@ public class ChatMessage {
     private String roomUuid;
 
     private Long senderId;
+    private String senderUserId;
     private String senderName;
     private String senderProfileImage;
 
@@ -34,10 +35,11 @@ public class ChatMessage {
     @Indexed
     private Instant timestamp;
 
-    private ChatMessage(String roomUuid, Long senderId, String senderName,
+    private ChatMessage(String roomUuid, Long senderId, String senderUserId, String senderName,
                         String senderProfileImage, String content, MessageType messageType) {
         this.roomUuid = roomUuid;
         this.senderId = senderId;
+        this.senderUserId = senderUserId;
         this.senderName = senderName;
         this.senderProfileImage = senderProfileImage;
         this.content = content;
@@ -49,6 +51,7 @@ public class ChatMessage {
         return new ChatMessage(
                 roomUuid,
                 sender.getId(),
+                sender.getUserId(),
                 sender.getDisplayName(),
                 sender.getProfileImageUrl(),
                 content,
@@ -59,6 +62,7 @@ public class ChatMessage {
     public static ChatMessage createSystem(String roomUuid, String content) {
         return new ChatMessage(
                 roomUuid,
+                null,
                 null,
                 "SYSTEM",
                 null,
