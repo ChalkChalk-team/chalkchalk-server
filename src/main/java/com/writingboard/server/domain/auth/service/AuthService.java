@@ -94,11 +94,9 @@ public class AuthService {
      * Refresh Token으로 새로운 Access Token 발급
      */
     public TokenResponse refreshToken(String refreshToken) {
-        if (!jwtProvider.validateToken(refreshToken)) {
-            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
-        }
+        Long memberId = jwtProvider.validateAndGetMemberId(refreshToken)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_TOKEN));
 
-        Long memberId = jwtProvider.getMemberIdFromToken(refreshToken);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.UNAUTHORIZED));
 

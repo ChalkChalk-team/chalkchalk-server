@@ -3,6 +3,8 @@ package com.writingboard.server.domain.auth.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -77,5 +79,22 @@ public class JwtProvider {
                 .getPayload();
 
         return Long.parseLong(claims.getSubject());
+    }
+
+    /**
+     * 토큰 검증과 memberId 추출을 한 번의 파싱으로 수행
+     */
+    public Optional<Long> validateAndGetMemberId(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return Optional.of(Long.parseLong(claims.getSubject()));
+        } catch (Exception e) {
+            log.error("토큰 검증 실패: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 }
