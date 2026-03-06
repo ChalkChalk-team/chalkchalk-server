@@ -98,6 +98,10 @@ public class Room extends BaseEntity {
                 .ifPresent(RoomParticipant::leave);
     }
 
+    public void updateLastActivity() {
+        this.lastActivityAt = Instant.now();
+    }
+
     public void close() {
         this.status = RoomStatus.CLOSED;
         this.closedAt = Instant.now();

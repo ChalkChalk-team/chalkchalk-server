@@ -26,4 +26,13 @@ public interface RoomParticipantRepository extends JpaRepository<RoomParticipant
                                              @Param("state") ParticipantState state);
 
     boolean existsByRoomIdAndMemberIdAndState(Long roomId, Long memberId, ParticipantState state);
+
+    @Query("SELECT rp FROM RoomParticipant rp " +
+           "JOIN FETCH rp.room r " +
+           "JOIN FETCH rp.member m " +
+           "WHERE r.roomUuid = :roomUuid " +
+           "AND rp.member.id = :memberId")
+    Optional<RoomParticipant> findWithRoomAndMemberByRoomUuidAndMemberId(
+            @Param("roomUuid") String roomUuid,
+            @Param("memberId") Long memberId);
 }

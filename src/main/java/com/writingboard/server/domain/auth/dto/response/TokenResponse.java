@@ -11,4 +11,5 @@ public class TokenResponse {
     private String refreshToken;
     private String tokenType;
     private Integer expiresIn;
+    private boolean isProfileCompleted;
 }

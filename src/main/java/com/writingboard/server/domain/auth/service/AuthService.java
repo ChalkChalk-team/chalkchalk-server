@@ -67,14 +67,14 @@ public class AuthService {
             return generateTokenResponse(existingMember);
         }
 
-        // 신규 회원: userId 필수
-        if (userId == null || userId.isBlank()) {
+        // 신규 회원: userId, nickname 필수
+        if (userId == null || userId.isBlank() || nickname == null || nickname.isBlank()) {
             throw new AuthException(AuthErrorCode.REGISTRATION_REQUIRED);
         }
 
         // userId 중복 검증
         if (memberRepository.existsByUserId(userId)) {
-            throw new MemberException(ErrorCode.DUPLICATE_USER_ID);
+            throw new MemberException(ErrorCode.USER_ID_DUPLICATE);
         }
 
         log.info("Creating new social member - provider: {}, socialId: {}", provider, userInfo.getSocialId());
@@ -117,6 +117,7 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(1800)
+                .isProfileCompleted(member.isProfileCompleted())
                 .build();
     }
 }

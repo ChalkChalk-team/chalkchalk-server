@@ -107,4 +107,9 @@ public class Member extends BaseEntity {
     public boolean isDeleted() {
         return this.status == MemberStatus.DELETED;
     }
+
+    public boolean isProfileCompleted() {
+        return userId != null && !userId.isBlank()
+                && nickname != null && !nickname.isBlank();
+    }
 }

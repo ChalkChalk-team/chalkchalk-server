@@ -21,7 +21,7 @@ import com.writingboard.server.domain.team.entity.enums.AssetSourceType;
 import com.writingboard.server.domain.team.entity.enums.AssetStatus;
 import com.writingboard.server.domain.team.entity.enums.AssetType;
 import com.writingboard.server.domain.team.repository.TeamAssetRepository;
-import com.writingboard.server.global.storage.StorageService;
+import com.writingboard.server.global.storage.StorageDeleteEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,7 +51,7 @@ class RoomAssetServiceTest {
     @Mock private TeamAssetRepository teamAssetRepository;
     @Mock private MemberRepository memberRepository;
     @Mock private PersonalAssetService personalAssetService;
-    @Mock private StorageService storageService;
+    @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private Member member;
     private Team team;
@@ -115,7 +115,7 @@ class RoomAssetServiceTest {
 
             // then
             assertThat(teamAsset.getStorageKey()).isEqualTo(NEW_STORAGE_KEY);
-            verify(storageService).deleteObject(OLD_STORAGE_KEY);
+            verify(eventPublisher).publishEvent(any(StorageDeleteEvent.class));
             assertThat(response).isNotNull();
         }
 
@@ -138,19 +138,18 @@ class RoomAssetServiceTest {
 
             // then
             assertThat(assetWithNullKey.getStorageKey()).isEqualTo(NEW_STORAGE_KEY);
-            verify(storageService, never()).deleteObject(any());
+            verify(eventPublisher, never()).publishEvent(any(StorageDeleteEvent.class));
         }
 
         @Test
-        @DisplayName("성공: R2 삭제 실패해도 storageKey 갱신은 유지된다")
-        void overwrite_r2DeleteFails_storageKeyStillUpdated() {
+        @DisplayName("성공: OVERWRITE 시 이벤트가 발행되고 storageKey가 갱신된다")
+        void overwrite_publishesDeleteEvent() {
             // given
             stubRoomAndParticipant();
 
             RoomAsset roomAsset = RoomAsset.createFromTeamAsset(room, teamAsset, member, SavePolicy.OVERWRITE);
             given(roomAssetRepository.findByIdAndRoomUuid(ROOM_ASSET_ID, ROOM_UUID))
                     .willReturn(Optional.of(roomAsset));
-            doThrow(new RuntimeException("R2 error")).when(storageService).deleteObject(OLD_STORAGE_KEY);
 
             AssetSaveRequest request = new AssetSaveRequest(NEW_STORAGE_KEY);
 
@@ -159,6 +158,7 @@ class RoomAssetServiceTest {
 
             // then
             assertThat(teamAsset.getStorageKey()).isEqualTo(NEW_STORAGE_KEY);
+            verify(eventPublisher).publishEvent(any(StorageDeleteEvent.class));
             assertThat(response).isNotNull();
         }
     }
@@ -186,7 +186,7 @@ class RoomAssetServiceTest {
             // then
             assertThat(teamAsset.getIsLatest()).isFalse();
             verify(teamAssetRepository).save(any(TeamAsset.class));
-            verify(storageService, never()).deleteObject(any());
+            verify(eventPublisher, never()).publishEvent(any(StorageDeleteEvent.class));
             assertThat(response).isNotNull();
         }
     }

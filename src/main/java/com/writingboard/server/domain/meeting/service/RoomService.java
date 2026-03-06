@@ -131,22 +131,10 @@ public class RoomService {
         }
 
         Member member = getMemberById(memberId);
+        RoomParticipant participant = joinOrRejoin(room, member, ParticipantRole.PARTICIPANT);
 
-        // 기존 참가 기록 확인
-        ParticipantRole roleToAssign = ParticipantRole.PARTICIPANT;
-        boolean isRejoining = participantRepository.findByRoomIdAndMemberId(room.getId(), memberId)
-                .isPresent();
-
-        if (isRejoining) {
-            // 재입장인 경우 기존 역할 유지를 위해 null 전달
-            // Room.join()의 rejoin() 로직에서 null이면 기존 role 유지
-            RoomParticipant participant = room.join(member, null);
-            return RoomJoinResponse.of(room, participant);
-        } else {
-            // 최초 입장인 경우 PARTICIPANT 권한 부여
-            RoomParticipant participant = room.join(member, roleToAssign);
-            return RoomJoinResponse.of(room, participant);
-        }
+        room.updateLastActivity();
+        return RoomJoinResponse.of(room, participant);
     }
 
     /**
@@ -195,8 +183,9 @@ public class RoomService {
 
         ParticipantRole role = isTeamMember ? ParticipantRole.PARTICIPANT : ParticipantRole.VIEWER;
 
-        RoomParticipant participant = room.join(member, role);
+        RoomParticipant participant = joinOrRejoin(room, member, role);
 
+        room.updateLastActivity();
         return RoomJoinResponse.of(room, participant);
     }
 
@@ -248,6 +237,19 @@ public class RoomService {
 
         return roomRepository.findByTeamIdAndStatus(teamId, RoomStatus.OPEN, pageable)
                 .map(RoomSummaryResponse::of);
+    }
+
+    private RoomParticipant joinOrRejoin(Room room, Member member, ParticipantRole defaultRole) {
+        return participantRepository.findByRoomIdAndMemberId(room.getId(), member.getId())
+                .map(existing -> {
+                    existing.rejoin(null); // 기존 역할 유지
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    RoomParticipant p = RoomParticipant.join(room, member, defaultRole);
+                    participantRepository.save(p);
+                    return p;
+                });
     }
 
     private Room getRoomByUuid(String roomUuid) {

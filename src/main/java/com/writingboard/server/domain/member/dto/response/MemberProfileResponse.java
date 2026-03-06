@@ -15,6 +15,7 @@ public class MemberProfileResponse {
     private String nickname;
     private String displayName;
     private String profileImageUrl;
+    private boolean isProfileCompleted;
 
     public static MemberProfileResponse of(Member member) {
         return MemberProfileResponse.builder()
@@ -25,6 +26,7 @@ public class MemberProfileResponse {
                 .nickname(member.getNickname())
                 .displayName(member.getDisplayName())
                 .profileImageUrl(member.getProfileImageUrl())
+                .isProfileCompleted(member.isProfileCompleted())
                 .build();
     }
 }

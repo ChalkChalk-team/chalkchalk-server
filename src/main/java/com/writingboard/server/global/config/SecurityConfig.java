@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/static/**",
                                 "/error",
                                 "/ws-stomp/**",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/api/members/user-id/availability"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

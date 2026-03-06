@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
         log.warn("MemberException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage(), e.getField()));
     }
 
     @ExceptionHandler(TeamException.class)

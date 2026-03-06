@@ -25,9 +25,10 @@ import com.writingboard.server.domain.team.entity.TeamAsset;
 import com.writingboard.server.domain.team.entity.enums.AssetSourceType;
 import com.writingboard.server.domain.team.entity.enums.AssetStatus;
 import com.writingboard.server.domain.team.repository.TeamAssetRepository;
-import com.writingboard.server.global.storage.StorageService;
+import com.writingboard.server.global.storage.StorageDeleteEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +46,7 @@ public class RoomAssetService {
     private final TeamAssetRepository teamAssetRepository;
     private final MemberRepository memberRepository;
     private final PersonalAssetService personalAssetService;
-    private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public RoomAssetResponse loadTeamAsset(Long memberId, String roomUuid, LoadTeamAssetRequest request) {
@@ -151,11 +152,7 @@ public class RoomAssetService {
                 String oldStorageKey = teamAsset.getStorageKey();
                 teamAsset.updateStorageKey(newStorageKey);
                 if (oldStorageKey != null) {
-                    try {
-                        storageService.deleteObject(oldStorageKey);
-                    } catch (Exception e) {
-                        log.warn("Failed to delete old R2 object: {}", oldStorageKey, e);
-                    }
+                    eventPublisher.publishEvent(new StorageDeleteEvent(oldStorageKey));
                 }
             }
             case NEW_COPY -> {

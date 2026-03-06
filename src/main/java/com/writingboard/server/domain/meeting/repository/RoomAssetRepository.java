@@ -18,7 +18,10 @@ public interface RoomAssetRepository extends JpaRepository<RoomAsset, Long> {
 
     Optional<RoomAsset> findByIdAndRoomId(Long id, Long roomId);
 
-    @Query("SELECT ra FROM RoomAsset ra WHERE ra.id = :id AND ra.room.roomUuid = :roomUuid")
+    @Query("SELECT ra FROM RoomAsset ra " +
+           "JOIN FETCH ra.teamAsset " +
+           "JOIN FETCH ra.addedBy " +
+           "WHERE ra.id = :id AND ra.room.roomUuid = :roomUuid")
     Optional<RoomAsset> findByIdAndRoomUuid(@Param("id") Long id, @Param("roomUuid") String roomUuid);
 
     @Modifying
