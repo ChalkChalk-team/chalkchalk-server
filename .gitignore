@@ -39,3 +39,6 @@ out/
 .env
 /data
 CLAUDE.md
+
+# APNs private keys
+*.p8

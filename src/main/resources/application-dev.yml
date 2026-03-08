@@ -64,3 +64,10 @@ cloud:
     endpoint: ${R2_ENDPOINT}
     bucket: ${R2_BUCKET}
     region: "auto"
+
+apns:
+  team-id: ${APNS_TEAM_ID:YOUR_TEAM_ID}
+  key-id: ${APNS_KEY_ID:YOUR_KEY_ID}
+  key-path: ${APNS_KEY_PATH:/path/to/AuthKey.p8}
+  topic: ${APNS_TOPIC:com.writingboard.app}
+  production: false

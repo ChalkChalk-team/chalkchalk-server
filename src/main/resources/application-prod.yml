@@ -74,3 +74,10 @@ cloud:
     endpoint: ${R2_ENDPOINT}
     bucket: ${R2_BUCKET}
     region: "auto"
+
+apns:
+  team-id: ${APNS_TEAM_ID}
+  key-id: ${APNS_KEY_ID}
+  key-path: ${APNS_KEY_PATH}
+  topic: ${APNS_TOPIC}
+  production: true
