@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class DeviceTokenService {
 
-    // APNs device token: 64 hexadecimal characters
     private static final Pattern DEVICE_TOKEN_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
 
     private final DeviceTokenRepository deviceTokenRepository;
@@ -39,7 +38,7 @@ public class DeviceTokenService {
 
         validateTokenFormat(request.getToken());
 
-        // 기존 토큰 조회
+
         DeviceToken deviceToken = deviceTokenRepository.findByToken(request.getToken())
                 .map(existingToken -> {
                     // 다른 회원의 토큰이면 재할당
