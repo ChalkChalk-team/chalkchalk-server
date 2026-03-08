@@ -5,11 +5,13 @@ import com.eatthepath.pushy.apns.PushNotificationResponse;
 import com.eatthepath.pushy.apns.util.SimpleApnsPayloadBuilder;
 import com.eatthepath.pushy.apns.util.SimpleApnsPushNotification;
 import com.eatthepath.pushy.apns.util.concurrent.PushNotificationFuture;
+import com.writingboard.server.domain.member.service.DeviceTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -19,6 +21,32 @@ public class ApnsPushNotificationService {
 
     private final ApnsClient apnsClient;
     private final ApnsProperties apnsProperties;
+    private final DeviceTokenService deviceTokenService;
+
+    /**
+     * 특정 회원에게 푸시 알림 전송
+     * - 회원의 모든 활성 디바이스 토큰으로 전송
+     * - 개별 토큰 전송 실패는 로그만 남기고 계속 진행
+     */
+    public void sendToMember(Long memberId, String title, String body) {
+        List<String> activeTokens = deviceTokenService.getActiveTokensByMemberId(memberId);
+
+        if (activeTokens.isEmpty()) {
+            log.info("No active device tokens for member: {}", memberId);
+            return;
+        }
+
+        log.info("Sending push notification to member: {} ({} tokens)", memberId, activeTokens.size());
+
+        for (String token : activeTokens) {
+            try {
+                sendNotificationSync(token, title, body);
+            } catch (Exception e) {
+                log.error("Failed to send push notification to token: {} - member: {}",
+                    maskToken(token), memberId, e);
+            }
+        }
+    }
 
     /**
      * 동기 방식 푸시 알림 전송 (테스트용)

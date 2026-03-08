@@ -17,7 +17,9 @@ import com.writingboard.server.domain.team.exception.TeamException;
 import com.writingboard.server.domain.team.repository.TeamInvitationRepository;
 import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.domain.team.repository.TeamRepository;
+import com.writingboard.server.global.notification.ApnsPushNotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,6 +40,7 @@ public class TeamInvitationService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamInvitationRepository teamInvitationRepository;
     private final MemberRepository memberRepository;
+    private final ApnsPushNotificationService pushNotificationService;
 
     @Transactional
     public TeamInviteLinkResponse createLinkInvitation(Long memberId, Long teamId, TeamInviteLinkRequest request) {
@@ -86,6 +90,9 @@ public class TeamInvitationService {
 
         TeamInvitation invitation = TeamInvitation.createDirectInvitation(team, inviter, invitee);
         teamInvitationRepository.save(invitation);
+
+        // 푸시 알림 전송 (실패해도 초대 생성은 성공)
+        sendInvitationPushNotification(invitee, inviter, team);
 
         return TeamInvitationResponse.of(invitation);
     }
@@ -190,6 +197,30 @@ public class TeamInvitationService {
         return invitations.stream()
                 .map(TeamInvitationResponse::of)
                 .toList();
+    }
+
+    // Helper method for push notification
+    private void sendInvitationPushNotification(Member invitee, Member inviter, Team team) {
+        try {
+            String inviterName = inviter.getDisplayName();
+            String teamName = team.getName();
+
+            String title = "팀 초대";
+            String body = String.format("%s님이 %s 팀에 초대했습니다.",
+                inviterName != null ? inviterName : "Unknown",
+                teamName != null ? teamName : "Unknown"
+            );
+
+            log.info("Sending team invitation push notification - invitee: {}, team: {}",
+                invitee.getId(), team.getId());
+
+            pushNotificationService.sendToMember(invitee.getId(), title, body);
+
+        } catch (Exception e) {
+            // 로그만 남김
+            log.warn("Failed to send team invitation push notification - invitee: {}, team: {}",
+                invitee.getId(), team.getId(), e);
+        }
     }
 
     // Helper methods
