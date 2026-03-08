@@ -58,6 +58,12 @@ jobs:
             R2_BUCKET=${{ secrets.R2_BUCKET }}
             R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}
             
+            # APNs
+            APNS_TEAM_ID=${{ secrets.APNS_TEAM_ID }}
+            APNS_KEY_ID=${{ secrets.APNS_KEY_ID }}
+            APNS_KEY_PATH=${{ secrets.APNS_KEY_PATH }}
+            APNS_TOPIC=${{ secrets.APNS_TOPIC }}
+            
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
             APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
             GRAFANA_PASSWORD=${{ secrets.GRAFANA_PASSWORD }}

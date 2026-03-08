@@ -17,6 +17,9 @@ public enum ErrorCode {
     USER_ID_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "USER_ID_INVALID_FORMAT", "사용자 ID는 영문, 숫자, 밑줄(_)만 허용하며 3~20자여야 합니다."),
     NICKNAME_INVALID(HttpStatus.BAD_REQUEST, "NICKNAME_INVALID", "닉네임은 30자 이내여야 합니다."),
 
+    // DeviceToken 관련 (DEVICE_TOKEN_XXX)
+    DEVICE_TOKEN_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "DEVICE_TOKEN_001", "유효하지 않은 디바이스 토큰 형식입니다. APNs 토큰은 64자리 16진수여야 합니다."),
+
     // Auth 관련 (AUTH_XXX) 일단 여기 나중에 옮길거
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_001", "인증이 필요합니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_002", "토큰이 만료되었습니다.");
