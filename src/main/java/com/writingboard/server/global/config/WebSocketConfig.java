@@ -3,6 +3,7 @@ package com.writingboard.server.global.config;
 import com.writingboard.server.domain.auth.jwt.JwtProvider;
 import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
 import com.writingboard.server.domain.meeting.repository.RoomRepository;
+import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.global.websocket.JwtHandshakeInterceptor;
 import com.writingboard.server.global.websocket.StompChannelInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtProvider jwtProvider;
     private final RoomRepository roomRepository;
     private final RoomParticipantRepository participantRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -40,7 +42,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(
-                new StompChannelInterceptor(jwtProvider, roomRepository, participantRepository)
+                new StompChannelInterceptor(jwtProvider, roomRepository, participantRepository, teamMemberRepository)
         );
     }
 }

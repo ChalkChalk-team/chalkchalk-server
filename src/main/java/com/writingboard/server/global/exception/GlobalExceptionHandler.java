@@ -7,6 +7,7 @@ import com.writingboard.server.domain.meeting.exception.MeetingException;
 import com.writingboard.server.domain.member.exception.MemberException;
 import com.writingboard.server.domain.personal.exception.PersonalException;
 import com.writingboard.server.domain.team.exception.TeamException;
+import com.writingboard.server.domain.teamchat.exception.TeamChatException;
 import com.writingboard.server.domain.voice.exception.VoiceException;
 import com.writingboard.server.global.common.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PersonalException.class)
     public ResponseEntity<ErrorResponse> handlePersonalException(PersonalException e) {
         log.warn("PersonalException: {}", e.getMessage());
+        return ResponseEntity
+                .status(e.getErrorCode().getStatus())
+                .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(TeamChatException.class)
+    public ResponseEntity<ErrorResponse> handleTeamChatException(TeamChatException e) {
+        log.warn("TeamChatException: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage()));

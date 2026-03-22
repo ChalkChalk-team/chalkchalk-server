@@ -8,6 +8,8 @@ import com.writingboard.server.domain.drawing.dto.response.DrawingStrokeDto;
 import com.writingboard.server.domain.drawing.service.DrawingRedisSubscriber;
 import com.writingboard.server.domain.meeting.dto.FollowStateDto;
 import com.writingboard.server.domain.meeting.service.FollowRedisSubscriber;
+import com.writingboard.server.domain.teamchat.dto.response.TeamChatEventDto;
+import com.writingboard.server.domain.teamchat.service.TeamChatRedisSubscriber;
 import com.writingboard.server.domain.voice.dto.response.VoiceSignalDto;
 import com.writingboard.server.domain.voice.service.VoiceRedisSubscriber;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +30,8 @@ public class RedisPubSubConfig {
             ChatRedisSubscriber chatRedisSubscriber,
             DrawingRedisSubscriber drawingRedisSubscriber,
             VoiceRedisSubscriber voiceRedisSubscriber,
-            FollowRedisSubscriber followRedisSubscriber) {
+            FollowRedisSubscriber followRedisSubscriber,
+            TeamChatRedisSubscriber teamChatRedisSubscriber) {
 
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
@@ -44,6 +47,9 @@ public class RedisPubSubConfig {
 
         // follow:room:* 패턴의 모든 채널 구독
         container.addMessageListener(followRedisSubscriber, new PatternTopic("follow:room:*"));
+
+        // teamchat:team:* 패턴의 모든 채널 구독
+        container.addMessageListener(teamChatRedisSubscriber, new PatternTopic("teamchat:team:*"));
 
         return container;
     }
@@ -121,6 +127,26 @@ public class RedisPubSubConfig {
 
         Jackson2JsonRedisSerializer<FollowStateDto> serializer =
                 new Jackson2JsonRedisSerializer<>(objectMapper, FollowStateDto.class);
+
+        template.setValueSerializer(serializer);
+        template.afterPropertiesSet();
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, TeamChatEventDto> teamChatRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory) {
+
+        RedisTemplate<String, TeamChatEventDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
+        Jackson2JsonRedisSerializer<TeamChatEventDto> serializer =
+                new Jackson2JsonRedisSerializer<>(objectMapper, TeamChatEventDto.class);
 
         template.setValueSerializer(serializer);
         template.afterPropertiesSet();

@@ -4,6 +4,8 @@ import com.writingboard.server.domain.auth.jwt.JwtProvider;
 import com.writingboard.server.domain.meeting.entity.enums.ParticipantState;
 import com.writingboard.server.domain.meeting.repository.RoomParticipantRepository;
 import com.writingboard.server.domain.meeting.repository.RoomRepository;
+import com.writingboard.server.domain.team.entity.enums.TeamMemberStatus;
+import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -21,6 +23,7 @@ public class StompChannelInterceptor implements ChannelInterceptor {
     private final JwtProvider jwtProvider;
     private final RoomRepository roomRepository;
     private final RoomParticipantRepository participantRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -102,6 +105,25 @@ public class StompChannelInterceptor implements ChannelInterceptor {
             log.debug("SUBSCRIBE 허용: memberId={}, roomUuid={}, dest={}",
                     memberId, roomUuid, destination);
         }
+
+        if (destination != null && destination.startsWith("/topic/team/") && destination.endsWith("/chat")) {
+            Long memberId = getMemberId(accessor);
+
+            if (memberId == null) {
+                throw new MessagingException("인증되지 않은 사용자입니다.");
+            }
+
+            Long teamId = extractTeamId(destination);
+
+            if (!isTeamMember(teamId, memberId)) {
+                log.warn("팀 채팅 SUBSCRIBE 거부: memberId={}, teamId={}, dest={}",
+                        memberId, teamId, destination);
+                throw new MessagingException("해당 팀의 멤버가 아닙니다.");
+            }
+
+            log.debug("팀 채팅 SUBSCRIBE 허용: memberId={}, teamId={}, dest={}",
+                    memberId, teamId, destination);
+        }
     }
 
     private String extractRoomUuid(String destination) {
@@ -121,5 +143,16 @@ public class StompChannelInterceptor implements ChannelInterceptor {
                 .map(room -> participantRepository.existsByRoomIdAndMemberIdAndState(
                         room.getId(), memberId, ParticipantState.JOINED))
                 .orElse(false);
+    }
+
+    private Long extractTeamId(String destination) {
+        // /topic/team/{teamId}/chat
+        String[] parts = destination.split("/");
+        return parts.length >= 4 ? Long.parseLong(parts[3]) : null;
+    }
+
+    private boolean isTeamMember(Long teamId, Long memberId) {
+        return teamMemberRepository.existsByTeamIdAndMemberIdAndStatus(
+                teamId, memberId, TeamMemberStatus.ACTIVE);
     }
 }
