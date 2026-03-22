@@ -1,7 +1,9 @@
 package com.writingboard.server.domain.team.service;
 
 import com.writingboard.server.domain.team.dto.request.RoleChangeRequest;
+import com.writingboard.server.domain.team.dto.request.TeamProfileUpdateRequest;
 import com.writingboard.server.domain.team.dto.response.TeamMemberResponse;
+import com.writingboard.server.domain.team.dto.response.TeamProfileResponse;
 import com.writingboard.server.domain.team.entity.TeamMember;
 import com.writingboard.server.domain.team.entity.enums.TeamMemberStatus;
 import com.writingboard.server.domain.team.entity.enums.TeamRole;
@@ -9,10 +11,13 @@ import com.writingboard.server.domain.team.exception.TeamErrorCode;
 import com.writingboard.server.domain.team.exception.TeamException;
 import com.writingboard.server.domain.team.repository.TeamMemberRepository;
 import com.writingboard.server.domain.team.repository.TeamRepository;
+import com.writingboard.server.global.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -22,6 +27,7 @@ public class TeamMemberService {
 
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final StorageService storageService;
 
     public List<TeamMemberResponse> getTeamMembers(Long teamId, Long memberId) {
         validateTeamExists(teamId);
@@ -95,6 +101,56 @@ public class TeamMemberService {
         }
 
         return TeamMemberResponse.of(targetMember);
+    }
+
+    public TeamProfileResponse getMyProfile(Long memberId, Long teamId) {
+        validateTeamExists(teamId);
+        TeamMember teamMember = getTeamMember(teamId, memberId);
+        String profileImageUrl = resolveProfileImageUrl(teamMember);
+        return TeamProfileResponse.of(teamMember, profileImageUrl);
+    }
+
+    public TeamProfileResponse getMemberProfile(Long memberId, Long teamId, Long targetMemberId) {
+        validateTeamExists(teamId);
+        validateTeamMember(teamId, memberId);
+        TeamMember teamMember = getTeamMember(teamId, targetMemberId);
+        String profileImageUrl = resolveProfileImageUrl(teamMember);
+        return TeamProfileResponse.of(teamMember, profileImageUrl);
+    }
+
+    @Transactional
+    public TeamProfileResponse updateMyNickname(Long memberId, Long teamId, TeamProfileUpdateRequest request) {
+        validateTeamExists(teamId);
+        TeamMember teamMember = getTeamMember(teamId, memberId);
+        teamMember.updateNickname(request.getNickname());
+        String profileImageUrl = resolveProfileImageUrl(teamMember);
+        return TeamProfileResponse.of(teamMember, profileImageUrl);
+    }
+
+    @Transactional
+    public TeamProfileResponse updateMyProfileImage(Long memberId, Long teamId, MultipartFile file) {
+        validateTeamExists(teamId);
+        TeamMember teamMember = getTeamMember(teamId, memberId);
+
+        String storageKey = "profiles/teams/" + teamId + "/members/" + memberId + ".jpg";
+
+        try {
+            storageService.uploadObject(storageKey, file.getInputStream(), file.getSize(), file.getContentType());
+        } catch (IOException e) {
+            throw new TeamException(TeamErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
+        }
+
+        teamMember.updateProfileImageUrl(storageKey);
+
+        String profileImageUrl = storageService.generateDownloadUrl(storageKey).downloadUrl();
+        return TeamProfileResponse.of(teamMember, profileImageUrl);
+    }
+
+    private String resolveProfileImageUrl(TeamMember teamMember) {
+        if (teamMember.getProfileImageUrl() != null && !teamMember.getProfileImageUrl().isBlank()) {
+            return storageService.generateDownloadUrl(teamMember.getProfileImageUrl()).downloadUrl();
+        }
+        return teamMember.getMember().getProfileImageUrl();
     }
 
     // Helper methods
