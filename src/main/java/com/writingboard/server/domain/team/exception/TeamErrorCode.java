@@ -38,7 +38,13 @@ public enum TeamErrorCode {
     ASSET_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "TEAM_403", "이미 삭제된 자산입니다"),
     INVALID_ASSET_TYPE(HttpStatus.BAD_REQUEST, "TEAM_404", "지원하지 않는 파일 타입입니다"),
     PREVIEW_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TEAM_405", "preview 이미지 업로드에 실패했습니다"),
-    NO_MEETING_HISTORY(HttpStatus.NOT_FOUND, "TEAM_406", "해당 자산을 사용한 회의 이력이 없습니다");
+    NO_MEETING_HISTORY(HttpStatus.NOT_FOUND, "TEAM_406", "해당 자산을 사용한 회의 이력이 없습니다"),
+
+    // Profile
+    PROFILE_IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "TEAM_501", "프로필 이미지 업로드에 실패했습니다"),
+
+    // Schedule
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "TEAM_601", "일정을 찾을 수 없습니다");
 
     private final HttpStatus status;
     private final String code;

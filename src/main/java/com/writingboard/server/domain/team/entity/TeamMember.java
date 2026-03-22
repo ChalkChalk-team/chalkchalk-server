@@ -42,6 +42,12 @@ public class TeamMember extends BaseEntity {
     @Column(name = "joined_at")
     private Instant joinedAt;
 
+    @Column(name = "nickname", length = 30)
+    private String nickname;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     public static TeamMember createOwner(Team team, Member member) {
         TeamMember tm = new TeamMember();
         tm.team = team;
@@ -103,5 +109,20 @@ public class TeamMember extends BaseEntity {
 
     public boolean isActive() {
         return this.status == TeamMemberStatus.ACTIVE;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getDisplayName() {
+        if (nickname != null && !nickname.isBlank()) {
+            return nickname;
+        }
+        return member.getDisplayName();
     }
 }
